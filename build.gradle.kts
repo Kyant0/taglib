@@ -4,7 +4,7 @@ plugins {
     `maven-publish`
 }
 
-group = "com.kyant.taglib"
+group = "com.kyant"
 version = libs.versions.app.version.get()
 
 android {

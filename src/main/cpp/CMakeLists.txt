@@ -17,7 +17,7 @@ set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections")
 
 add_subdirectory(taglib)
 
-include_directories("/"
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}
         ${taglib_SOURCE_DIR}/taglib
         ${taglib_SOURCE_DIR}/taglib/toolkit)
 
