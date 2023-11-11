@@ -16,7 +16,7 @@ class Tests {
 
             // Read metadata
 
-            val metadata = TagLib.getMetadata(fd.dup().detachFd())!!
+            val metadata = TagLib.getMetadata(fd.dup().detachFd(), readLyrics = true)!!
             Assert.assertEquals(39936, metadata.audioProperties.length)
             Assert.assertEquals("Bee Moved", metadata.propertyMap["TITLE"]!![0])
 

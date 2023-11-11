@@ -16,14 +16,14 @@ public object TagLib {
      *
      * @param fd File descriptor
      * @param readStyle Read style for audio properties to balance speed and accuracy
-     * @param withLyrics Whether to read lyrics. Note if you want to save the property map later,
+     * @param readLyrics Whether to read lyrics. Note if you want to save the property map later,
      * you must set this to `true` in case the lyrics are erased
      */
     public fun getMetadata(
         fd: Int,
         readStyle: AudioPropertiesReadStyle = AudioPropertiesReadStyle.Average,
-        withLyrics: Boolean = false,
-    ): Metadata? = getMetadata(fd, readStyle.ordinal, withLyrics)
+        readLyrics: Boolean = false,
+    ): Metadata? = getMetadata(fd, readStyle.ordinal, readLyrics)
 
     /**
      * Save metadata by file descriptor.
