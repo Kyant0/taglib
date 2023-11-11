@@ -4,6 +4,7 @@
 #include "tdebuglistener.h"
 #include "tfilestream.h"
 #include "tpropertymap.h"
+#include "taglib/taglib/flac/flacfile.h"
 
 class DebugListener : public TagLib::DebugListener {
     void printMessage(const TagLib::String &msg) override {
@@ -167,7 +168,7 @@ TagLib::PropertyMap JniHashMapToPropertyMap(JNIEnv *env, jobject hashMap) {
         jobject value = env->CallObjectMethod(entry, getValueMethod);
 
         const char *keyStr = env->GetStringUTFChars(static_cast<jstring>(key), nullptr);
-        const TagLib::StringList valueList = JniStringArrayToStringList(env, static_cast<jobjectArray>(value));
+        const auto valueList = JniStringArrayToStringList(env, static_cast<jobjectArray>(value));
 
         propertyMap[TagLib::String(keyStr)] = valueList;
 
@@ -200,16 +201,23 @@ Java_com_kyant_taglib_TagLib_getMetadata(JNIEnv *env,
     }
 
     auto audioProperties = fileRef.audioProperties();
-    jint duration = static_cast<jint>(audioProperties->lengthInMilliseconds());
-    jint bitrate = static_cast<jint>(audioProperties->bitrate());
-    jint sampleRate = static_cast<jint>(audioProperties->sampleRate());
-    jint channels = static_cast<jint>(audioProperties->channels());
-    jobject audioPropertiesObject = env->NewObject(
-            audioPropertiesClass, audioPropertiesConstructor,
-            duration, bitrate, sampleRate, channels);
+    jobject audioPropertiesObject;
+    if (audioProperties) {
+        jint duration = static_cast<jint>(audioProperties->lengthInMilliseconds());
+        jint bitrate = static_cast<jint>(audioProperties->bitrate());
+        jint sampleRate = static_cast<jint>(audioProperties->sampleRate());
+        jint channels = static_cast<jint>(audioProperties->channels());
+        audioPropertiesObject = env->NewObject(
+                audioPropertiesClass, audioPropertiesConstructor,
+                duration, bitrate, sampleRate, channels);
+    } else {
+        audioPropertiesObject = env->NewObject(
+                audioPropertiesClass, audioPropertiesConstructor,
+                0, 0, 0, 0);
+    }
 
-    TagLib::PropertyMap properties = fileRef.tag()->properties();
-    if (!read_lyrics) {
+    auto properties = fileRef.properties();
+    if (!read_lyrics && properties.contains("LYRICS")) {
         properties.erase("LYRICS");
     }
     jobject propertiesMap = PropertyMapToJniHashMap(env, properties);
@@ -218,7 +226,6 @@ Java_com_kyant_taglib_TagLib_getMetadata(JNIEnv *env,
             metadataClass, metadataConstructor,
             audioPropertiesObject, propertiesMap
     );
-
     return metadata;
 }
 
@@ -248,7 +255,7 @@ Java_com_kyant_taglib_TagLib_getLyrics(JNIEnv *env, jobject /* this */, jint fd)
         return nullptr;
     }
 
-    TagLib::PropertyMap properties = fileRef.tag()->properties();
+    auto properties = fileRef.properties();
     if (!properties.contains("LYRICS")) {
         return nullptr;
     }
@@ -264,28 +271,27 @@ Java_com_kyant_taglib_TagLib_getPictures(JNIEnv *env,
     auto stream = std::make_unique<TagLib::FileStream>(fd, true);
     TagLib::FileRef fileRef(stream.get(), false);
 
-    auto file = fileRef.file();
-    if (file == nullptr) {
+    if (fileRef.isNull()) {
         return nullptr;
     }
 
-    auto pictures = file->complexProperties("PICTURE");
+    auto pictures = fileRef.complexProperties("PICTURE");
     if (pictures.isEmpty()) {
         return nullptr;
     }
 
     jobjectArray pictureArray = env->NewObjectArray(pictures.size(), pictureClass, nullptr);
     for (const auto &picture: pictures) {
-        TagLib::ByteVector pictureData = picture.value("data").toByteVector();
+        auto pictureData = picture.value("data").toByteVector();
         if (pictureData.isEmpty()) {
             continue;
         }
 
-        TagLib::String description = picture.value("description").toString();
+        auto description = picture.value("description").toString();
         jstring jDescription = env->NewStringUTF(description.toCString(true));
-        TagLib::String pictureType = picture.value("pictureType").toString();
+        auto pictureType = picture.value("pictureType").toString();
         jstring jPictureType = env->NewStringUTF(pictureType.toCString(true));
-        TagLib::String mimeType = picture.value("mimeType").toString();
+        auto mimeType = picture.value("mimeType").toString();
         jstring jMimeType = env->NewStringUTF(mimeType.toCString(true));
         jbyteArray bytes = env->NewByteArray(static_cast<jint>(pictureData.size()));
 
