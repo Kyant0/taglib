@@ -1,5 +1,6 @@
 #include <android/log.h>
 #include <jni.h>
+#include <unistd.h>
 #include "fileref.h"
 #include "tdebuglistener.h"
 #include "tfilestream.h"
@@ -195,6 +196,7 @@ Java_com_kyant_taglib_TagLib_getMetadata(JNIEnv *env,
     auto stream = std::make_unique<TagLib::FileStream>(fd, true);
     auto style = static_cast<TagLib::AudioProperties::ReadStyle>(read_style);
     TagLib::FileRef fileRef(stream.get(), true, style);
+    close(fd);
 
     if (fileRef.isNull()) {
         return nullptr;
@@ -243,13 +245,16 @@ Java_com_kyant_taglib_TagLib_savePropertyMap(JNIEnv *env,
 
     auto propertiesMap = JniHashMapToPropertyMap(env, property_map);
     fileRef.setProperties(propertiesMap);
-    return fileRef.save();
+    bool success = fileRef.save();
+    close(fd);
+    return success;
 }
 
 extern "C" JNIEXPORT jstring JNICALL
 Java_com_kyant_taglib_TagLib_getLyrics(JNIEnv *env, jobject /* this */, jint fd) {
     auto stream = std::make_unique<TagLib::FileStream>(fd, true);
     TagLib::FileRef fileRef(stream.get(), false);
+    close(fd);
 
     if (fileRef.isNull()) {
         return nullptr;
@@ -270,6 +275,7 @@ Java_com_kyant_taglib_TagLib_getPictures(JNIEnv *env,
                                          jint fd) {
     auto stream = std::make_unique<TagLib::FileStream>(fd, true);
     TagLib::FileRef fileRef(stream.get(), false);
+    close(fd);
 
     if (fileRef.isNull()) {
         return nullptr;
