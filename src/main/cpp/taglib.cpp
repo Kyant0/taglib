@@ -148,20 +148,19 @@ TagLib::StringList JniStringArrayToStringList(JNIEnv *env, jobjectArray stringAr
 TagLib::PropertyMap JniHashMapToPropertyMap(JNIEnv *env, jobject hashMap) {
     TagLib::PropertyMap propertyMap;
 
-    jmethodID entrySetMethod = env->GetMethodID(hashMapClass, "entrySet", "()Ljava/util/Set;");
-
     jclass entrySetClass = env->FindClass("java/util/Set");
     jmethodID iteratorMethod = env->GetMethodID(entrySetClass, "iterator", "()Ljava/util/Iterator;");
+    jmethodID entrySetMethod = env->GetMethodID(hashMapClass, "entrySet", "()Ljava/util/Set;");
+    jobject entrySet = env->CallObjectMethod(hashMap, entrySetMethod);
+    jobject iterator = env->CallObjectMethod(entrySet, iteratorMethod);
 
     jclass iteratorClass = env->FindClass("java/util/Iterator");
     jmethodID hasNextMethod = env->GetMethodID(iteratorClass, "hasNext", "()Z");
     jmethodID nextMethod = env->GetMethodID(iteratorClass, "next", "()Ljava/lang/Object;");
+
     jclass mapEntryClass = env->FindClass("java/util/Map$Entry");
     jmethodID getKeyMethod = env->GetMethodID(mapEntryClass, "getKey", "()Ljava/lang/Object;");
     jmethodID getValueMethod = env->GetMethodID(mapEntryClass, "getValue", "()Ljava/lang/Object;");
-
-    jobject entrySet = env->CallObjectMethod(hashMap, entrySetMethod);
-    jobject iterator = env->CallObjectMethod(entrySet, iteratorMethod);
 
     while (env->CallBooleanMethod(iterator, hasNextMethod)) {
         jobject entry = env->CallObjectMethod(iterator, nextMethod);
@@ -196,7 +195,6 @@ Java_com_kyant_taglib_TagLib_getMetadata(JNIEnv *env,
     auto stream = std::make_unique<TagLib::FileStream>(fd, true);
     auto style = static_cast<TagLib::AudioProperties::ReadStyle>(read_style);
     TagLib::FileRef fileRef(stream.get(), true, style);
-    close(fd);
 
     if (fileRef.isNull()) {
         return nullptr;
@@ -246,7 +244,6 @@ Java_com_kyant_taglib_TagLib_savePropertyMap(JNIEnv *env,
     auto propertiesMap = JniHashMapToPropertyMap(env, property_map);
     fileRef.setProperties(propertiesMap);
     bool success = fileRef.save();
-    close(fd);
     return success;
 }
 
@@ -254,7 +251,6 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_com_kyant_taglib_TagLib_getLyrics(JNIEnv *env, jobject /* this */, jint fd) {
     auto stream = std::make_unique<TagLib::FileStream>(fd, true);
     TagLib::FileRef fileRef(stream.get(), false);
-    close(fd);
 
     if (fileRef.isNull()) {
         return nullptr;
@@ -275,7 +271,6 @@ Java_com_kyant_taglib_TagLib_getPictures(JNIEnv *env,
                                          jint fd) {
     auto stream = std::make_unique<TagLib::FileStream>(fd, true);
     TagLib::FileRef fileRef(stream.get(), false);
-    close(fd);
 
     if (fileRef.isNull()) {
         return nullptr;
