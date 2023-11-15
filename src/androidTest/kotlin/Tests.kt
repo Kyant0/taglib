@@ -12,11 +12,12 @@ class Tests {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
 
         // Asset is from https://helpguide.sony.net/high-res/sample1/v1/en/index.html
-        getFdFromAssets(context, "Sample_BeeMoved_48kHz16bit.m4a").use { fd ->
+        val m4aFileName = "Sample_BeeMoved_48kHz16bit.m4a"
+        getFdFromAssets(context, m4aFileName).use { fd ->
 
             // Read metadata
 
-            val metadata = TagLib.getMetadata(fd.dup().detachFd(), readLyrics = true)!!
+            val metadata = TagLib.getMetadata(fd.dup().detachFd(), m4aFileName, readLyrics = true)!!
             Assert.assertEquals(39936, metadata.audioProperties.length)
             Assert.assertEquals("Bee Moved", metadata.propertyMap["TITLE"]!![0])
 
@@ -31,11 +32,20 @@ class Tests {
             val newPropertyMap = metadata.propertyMap.toMutableMap().apply {
                 this["TITLE"] = arrayOf("Bee Moved (Remix)")
             }.toMap()
-            val saved = TagLib.savePropertyMap(fd.dup().detachFd(), newPropertyMap)
+            val saved = TagLib.savePropertyMap(fd.dup().detachFd(), m4aFileName, newPropertyMap)
             Assert.assertTrue(saved)
 
-            val newMetadata = TagLib.getMetadata(fd.dup().detachFd())!!
+            val newMetadata = TagLib.getMetadata(fd.dup().detachFd(), m4aFileName)!!
             Assert.assertEquals("Bee Moved (Remix)", newMetadata.propertyMap["TITLE"]!![0])
+        }
+
+        val flacFileName = "是什么让我遇见这样的你 - 白安.flac"
+        getFdFromAssets(context, flacFileName).use { fd ->
+            val metadata = TagLib.getMetadata(fd.dup().detachFd(), flacFileName)!!
+            Assert.assertEquals("是什么让我遇见这样的你", metadata.propertyMap["TITLE"]!![0])
+
+            val pictures = TagLib.getPictures(fd.dup().detachFd(), flacFileName)!!
+            Assert.assertEquals(42716, pictures[0].data.size)
         }
     }
 

@@ -1,11 +1,11 @@
 #include <android/log.h>
 #include <jni.h>
 #include <unistd.h>
+#include "taglib_ext.h"
 #include "fileref.h"
 #include "tdebuglistener.h"
 #include "tfilestream.h"
 #include "tpropertymap.h"
-#include "taglib/taglib/flac/flacfile.h"
 
 class DebugListener : public TagLib::DebugListener {
     void printMessage(const TagLib::String &msg) override {
@@ -187,20 +187,25 @@ TagLib::PropertyMap JniHashMapToPropertyMap(JNIEnv *env, jobject hashMap) {
 
 
 extern "C" JNIEXPORT jobject JNICALL
-Java_com_kyant_taglib_TagLib_getMetadata(JNIEnv *env,
-                                         jobject /* this */,
-                                         jint fd,
-                                         jint read_style,
-                                         jboolean read_lyrics) {
+Java_com_kyant_taglib_TagLib_getMetadata(
+        JNIEnv *env,
+        jobject /* this */,
+        jint fd,
+        jstring file_name,
+        jint read_style,
+        jboolean read_lyrics
+) {
     auto stream = std::make_unique<TagLib::FileStream>(fd, true);
+    const char *file_name_c = env->GetStringUTFChars(file_name, nullptr);
     auto style = static_cast<TagLib::AudioProperties::ReadStyle>(read_style);
-    TagLib::FileRef fileRef(stream.get(), true, style);
+    TagLib::File *file = parse_stream(stream.get(), file_name_c, true, style);
+    env->ReleaseStringUTFChars(file_name, file_name_c);
 
-    if (fileRef.isNull()) {
+    if (!file || !file->isValid()) {
         return nullptr;
     }
 
-    auto audioProperties = fileRef.audioProperties();
+    auto audioProperties = file->audioProperties();
     jobject audioPropertiesObject;
     if (audioProperties) {
         jint duration = static_cast<jint>(audioProperties->lengthInMilliseconds());
@@ -216,7 +221,7 @@ Java_com_kyant_taglib_TagLib_getMetadata(JNIEnv *env,
                 0, 0, 0, 0);
     }
 
-    auto properties = fileRef.properties();
+    auto properties = file->properties();
     if (!read_lyrics && properties.contains("LYRICS")) {
         properties.erase("LYRICS");
     }
@@ -230,33 +235,45 @@ Java_com_kyant_taglib_TagLib_getMetadata(JNIEnv *env,
 }
 
 extern "C" JNIEXPORT jboolean JNICALL
-Java_com_kyant_taglib_TagLib_savePropertyMap(JNIEnv *env,
-                                             jobject /* this */,
-                                             jint fd,
-                                             jobject property_map) {
+Java_com_kyant_taglib_TagLib_savePropertyMap(
+        JNIEnv *env,
+        jobject /* this */,
+        jint fd,
+        jstring file_name,
+        jobject property_map
+) {
     auto stream = std::make_unique<TagLib::FileStream>(fd, false);
-    TagLib::FileRef fileRef(stream.get(), false);
+    const char *file_name_c = env->GetStringUTFChars(file_name, nullptr);
+    TagLib::File *file = parse_stream(stream.get(), file_name_c);
+    env->ReleaseStringUTFChars(file_name, file_name_c);
 
-    if (fileRef.isNull()) {
+    if (!file || !file->isValid()) {
         return false;
     }
 
     auto propertiesMap = JniHashMapToPropertyMap(env, property_map);
-    fileRef.setProperties(propertiesMap);
-    bool success = fileRef.save();
+    file->setProperties(propertiesMap);
+    bool success = file->save();
     return success;
 }
 
 extern "C" JNIEXPORT jstring JNICALL
-Java_com_kyant_taglib_TagLib_getLyrics(JNIEnv *env, jobject /* this */, jint fd) {
+Java_com_kyant_taglib_TagLib_getLyrics(
+        JNIEnv *env,
+        jobject /* this */,
+        jint fd,
+        jstring file_name
+) {
     auto stream = std::make_unique<TagLib::FileStream>(fd, true);
-    TagLib::FileRef fileRef(stream.get(), false);
+    const char *file_name_c = env->GetStringUTFChars(file_name, nullptr);
+    TagLib::File *file = parse_stream(stream.get(), file_name_c);
+    env->ReleaseStringUTFChars(file_name, file_name_c);
 
-    if (fileRef.isNull()) {
+    if (!file || !file->isValid()) {
         return nullptr;
     }
 
-    auto properties = fileRef.properties();
+    auto properties = file->properties();
     if (!properties.contains("LYRICS")) {
         return nullptr;
     }
@@ -266,17 +283,22 @@ Java_com_kyant_taglib_TagLib_getLyrics(JNIEnv *env, jobject /* this */, jint fd)
 }
 
 extern "C" JNIEXPORT jobjectArray JNICALL
-Java_com_kyant_taglib_TagLib_getPictures(JNIEnv *env,
-                                         jobject /* this */,
-                                         jint fd) {
+Java_com_kyant_taglib_TagLib_getPictures(
+        JNIEnv *env,
+        jobject /* this */,
+        jint fd,
+        jstring file_name
+) {
     auto stream = std::make_unique<TagLib::FileStream>(fd, true);
-    TagLib::FileRef fileRef(stream.get(), false);
+    const char *file_name_c = env->GetStringUTFChars(file_name, nullptr);
+    TagLib::File *file = parse_stream(stream.get(), file_name_c);
+    env->ReleaseStringUTFChars(file_name, file_name_c);
 
-    if (fileRef.isNull()) {
+    if (!file || !file->isValid()) {
         return nullptr;
     }
 
-    auto pictures = fileRef.complexProperties("PICTURE");
+    auto pictures = file->complexProperties("PICTURE");
     if (pictures.isEmpty()) {
         return nullptr;
     }
