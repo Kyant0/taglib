@@ -2,7 +2,6 @@
 #include <jni.h>
 #include <unistd.h>
 #include "taglib_ext.h"
-#include "fileref.h"
 #include "tdebuglistener.h"
 #include "tfilestream.h"
 #include "tpropertymap.h"
