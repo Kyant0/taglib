@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "com.kyant"
-version = libs.versions.app.version.get()
+version = libs.versions.lib.version.get()
 
 android {
     namespace = "com.kyant.taglib"
@@ -58,7 +58,7 @@ afterEvaluate {
             register("mavenRelease", MavenPublication::class) {
                 groupId = "com.kyant"
                 artifactId = "taglib"
-                version = libs.versions.app.version.get()
+                version = libs.versions.lib.version.get()
                 from(components["release"])
             }
         }
