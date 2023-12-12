@@ -2,7 +2,7 @@
 agp = "8.1.4"
 android-minSdk = "21"
 android-compileSdk = "34"
-lib-version = "1.13.1.2448"
+lib-version = "1.13.1.2460"
 kotlin = "1.9.21"
 rules = "1.5.0"
 runner = "1.5.2"
