@@ -29,9 +29,10 @@ class Tests {
 
             // Save metadata
 
-            val newPropertyMap = metadata.propertyMap.toMutableMap().apply {
-                this["TITLE"] = arrayOf("Bee Moved (Remix)")
-            }.toMap()
+            val newPropertyMap =
+                metadata.propertyMap.toMutableMap().apply {
+                    this["TITLE"] = arrayOf("Bee Moved (Remix)")
+                }.toMap()
             val saved = TagLib.savePropertyMap(fd.dup().detachFd(), m4aFileName, newPropertyMap)
             Assert.assertTrue(saved)
 
@@ -49,16 +50,23 @@ class Tests {
         }
     }
 
-    private fun getFdFromAssets(context: Context, fileName: String): ParcelFileDescriptor {
+    private fun getFdFromAssets(
+        context: Context,
+        fileName: String,
+    ): ParcelFileDescriptor {
         val file = getFileFromAssets(context, fileName)
         return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE)
     }
 
-    private fun getFileFromAssets(context: Context, fileName: String): File = File(context.cacheDir, fileName).also {
-        it.outputStream().use { cache ->
-            context.assets.open(fileName).use { inputStream ->
-                inputStream.copyTo(cache)
+    private fun getFileFromAssets(
+        context: Context,
+        fileName: String,
+    ): File =
+        File(context.cacheDir, fileName).also {
+            it.outputStream().use { cache ->
+                context.assets.open(fileName).use { inputStream ->
+                    inputStream.copyTo(cache)
+                }
             }
         }
-    }
 }

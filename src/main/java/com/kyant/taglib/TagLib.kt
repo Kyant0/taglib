@@ -4,7 +4,6 @@ package com.kyant.taglib
  * An object that provides access to the native TagLib library.
  */
 public object TagLib {
-
     private external fun getMetadata(
         fd: Int,
         fileName: String,
@@ -66,9 +65,10 @@ public object TagLib {
     public fun getFrontCover(
         fd: Int,
         fileName: String = "",
-    ): Picture? = getPictures(fd, fileName)?.let { pictures ->
-        pictures.find { picture -> picture.pictureType == "Front Cover" } ?: pictures.firstOrNull()
-    }
+    ): Picture? =
+        getPictures(fd, fileName)?.let { pictures ->
+            pictures.find { picture -> picture.pictureType == "Front Cover" } ?: pictures.firstOrNull()
+        }
 
     init {
         System.loadLibrary("taglib")

@@ -1,8 +1,8 @@
 [versions]
-agp = "8.2.0"
+agp = "8.2.1"
 android-minSdk = "21"
 android-compileSdk = "34"
-lib-version = "1.13.1.2492"
+lib-version = "1.13.1.2498"
 kotlin = "1.9.22"
 rules = "1.5.0"
 runner = "1.5.2"
