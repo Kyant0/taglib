@@ -71,6 +71,9 @@ public object TagLib {
         }
 
     init {
-        System.loadLibrary("taglib")
+        try {
+            System.loadLibrary("taglib")
+        } catch (_: UnsatisfiedLinkError) {
+        }
     }
 }
