@@ -15,10 +15,6 @@ public data class Picture(
     val pictureType: String,
     val mimeType: String,
 ) {
-    override fun toString(): String {
-        return "Picture(pictureType=$pictureType, mimeType=$mimeType, description=$description, data=(${data.size} bytes))"
-    }
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
