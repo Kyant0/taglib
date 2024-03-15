@@ -48,6 +48,13 @@ class Tests {
             val pictures = TagLib.getPictures(fd.dup().detachFd(), flacFileName)!!
             Assert.assertEquals(42716, pictures[0].data.size)
         }
+
+        val multipleAlbumArtFileName = "multiple_album_art.flac"
+        getFdFromAssets(context, multipleAlbumArtFileName).use { fd ->
+            val pictures = TagLib.getPictures(fd.dup().detachFd(), flacFileName)!!
+            Assert.assertEquals(3, pictures.size)
+            Assert.assertEquals(29766, pictures[2].data.size)
+        }
     }
 
     private fun getFdFromAssets(

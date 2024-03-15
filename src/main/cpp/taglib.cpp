@@ -302,6 +302,7 @@ Java_com_kyant_taglib_TagLib_getPictures(
         return nullptr;
     }
 
+    auto pictureIndex = 0;
     jobjectArray pictureArray = env->NewObjectArray(pictures.size(), pictureClass, nullptr);
     for (const auto &picture: pictures) {
         auto pictureData = picture.value("data").toByteVector();
@@ -330,8 +331,9 @@ Java_com_kyant_taglib_TagLib_getPictures(
         env->DeleteLocalRef(jDescription);
         env->DeleteLocalRef(jPictureType);
         env->DeleteLocalRef(jMimeType);
-        env->SetObjectArrayElement(pictureArray, static_cast<jsize>(&picture - &pictures[0]), pictureObject);
+        env->SetObjectArrayElement(pictureArray, pictureIndex, pictureObject);
         env->DeleteLocalRef(pictureObject);
+        pictureIndex++;
     }
 
     return pictureArray;
