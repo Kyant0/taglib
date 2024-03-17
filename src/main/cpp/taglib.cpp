@@ -1,7 +1,8 @@
 #include <android/log.h>
 #include <jni.h>
 #include <unistd.h>
-#include "taglib_ext.h"
+#include "audioproperties.h"
+#include "fileref.h"
 #include "tdebuglistener.h"
 #include "tfilestream.h"
 #include "tpropertymap.h"
@@ -198,22 +199,19 @@ Java_com_kyant_taglib_TagLib_getMetadata(
         JNIEnv *env,
         jobject /* this */,
         jint fd,
-        jstring file_name,
         jint read_style,
         jboolean read_lyrics
 ) {
     try {
         auto stream = std::make_unique<TagLib::FileStream>(fd, true);
-        const char *file_name_c = env->GetStringUTFChars(file_name, nullptr);
         auto style = static_cast<TagLib::AudioProperties::ReadStyle>(read_style);
-        TagLib::File *file = parse_stream(stream.get(), file_name_c, true, style);
-        env->ReleaseStringUTFChars(file_name, file_name_c);
+        TagLib::FileRef f(stream.get(), true, style);
 
-        if (!file || !file->isValid()) {
+        if (f.isNull()) {
             return nullptr;
         }
 
-        auto audioProperties = file->audioProperties();
+        auto audioProperties = f.audioProperties();
         jobject audioPropertiesObject;
         if (audioProperties) {
             jint duration = static_cast<jint>(audioProperties->lengthInMilliseconds());
@@ -229,7 +227,7 @@ Java_com_kyant_taglib_TagLib_getMetadata(
                     0, 0, 0, 0);
         }
 
-        auto properties = file->properties();
+        auto properties = f.properties();
         if (!read_lyrics && properties.contains("LYRICS")) {
             properties.erase("LYRICS");
         }
@@ -251,22 +249,19 @@ Java_com_kyant_taglib_TagLib_savePropertyMap(
         JNIEnv *env,
         jobject /* this */,
         jint fd,
-        jstring file_name,
         jobject property_map
 ) {
     try {
         auto stream = std::make_unique<TagLib::FileStream>(fd, false);
-        const char *file_name_c = env->GetStringUTFChars(file_name, nullptr);
-        TagLib::File *file = parse_stream(stream.get(), file_name_c);
-        env->ReleaseStringUTFChars(file_name, file_name_c);
+        TagLib::FileRef f(stream.get(), false);
 
-        if (!file || !file->isValid()) {
+        if (f.isNull()) {
             return false;
         }
 
         auto propertiesMap = JniHashMapToPropertyMap(env, property_map);
-        file->setProperties(propertiesMap);
-        bool success = file->save();
+        f.setProperties(propertiesMap);
+        bool success = f.save();
         return success;
     } catch (const std::exception &e) {
         throwJavaException(env, e.what());
@@ -278,20 +273,17 @@ extern "C" JNIEXPORT jstring JNICALL
 Java_com_kyant_taglib_TagLib_getLyrics(
         JNIEnv *env,
         jobject /* this */,
-        jint fd,
-        jstring file_name
+        jint fd
 ) {
     try {
         auto stream = std::make_unique<TagLib::FileStream>(fd, true);
-        const char *file_name_c = env->GetStringUTFChars(file_name, nullptr);
-        TagLib::File *file = parse_stream(stream.get(), file_name_c);
-        env->ReleaseStringUTFChars(file_name, file_name_c);
+        TagLib::FileRef f(stream.get(), false);
 
-        if (!file || !file->isValid()) {
+        if (f.isNull()) {
             return nullptr;
         }
 
-        auto properties = file->properties();
+        auto properties = f.properties();
         if (!properties.contains("LYRICS")) {
             return nullptr;
         }
@@ -308,20 +300,17 @@ extern "C" JNIEXPORT jobjectArray JNICALL
 Java_com_kyant_taglib_TagLib_getPictures(
         JNIEnv *env,
         jobject /* this */,
-        jint fd,
-        jstring file_name
+        jint fd
 ) {
     try {
         auto stream = std::make_unique<TagLib::FileStream>(fd, true);
-        const char *file_name_c = env->GetStringUTFChars(file_name, nullptr);
-        TagLib::File *file = parse_stream(stream.get(), file_name_c);
-        env->ReleaseStringUTFChars(file_name, file_name_c);
+        TagLib::FileRef f(stream.get(), false);
 
-        if (!file || !file->isValid()) {
+        if (f.isNull()) {
             return nullptr;
         }
 
-        auto pictures = file->complexProperties("PICTURE");
+        auto pictures = f.complexProperties("PICTURE");
         if (pictures.isEmpty()) {
             return nullptr;
         }

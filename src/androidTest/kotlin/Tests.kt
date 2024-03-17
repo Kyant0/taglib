@@ -12,12 +12,11 @@ class Tests {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
 
         // Asset is from https://helpguide.sony.net/high-res/sample1/v1/en/index.html
-        val m4aFileName = "Sample_BeeMoved_48kHz16bit.m4a"
-        getFdFromAssets(context, m4aFileName).use { fd ->
+        getFdFromAssets(context, "Sample_BeeMoved_48kHz16bit.m4a").use { fd ->
 
             // Read metadata
 
-            val metadata = TagLib.getMetadata(fd.dup().detachFd(), m4aFileName, readLyrics = true)!!
+            val metadata = TagLib.getMetadata(fd.dup().detachFd(), withLyrics = true)!!
             Assert.assertEquals(39936, metadata.audioProperties.length)
             Assert.assertEquals("Bee Moved", metadata.propertyMap["TITLE"]!![0])
 
@@ -33,25 +32,23 @@ class Tests {
                 metadata.propertyMap.toMutableMap().apply {
                     this["TITLE"] = arrayOf("Bee Moved (Remix)")
                 }.toMap()
-            val saved = TagLib.savePropertyMap(fd.dup().detachFd(), m4aFileName, newPropertyMap)
+            val saved = TagLib.savePropertyMap(fd.dup().detachFd(), newPropertyMap)
             Assert.assertTrue(saved)
 
-            val newMetadata = TagLib.getMetadata(fd.dup().detachFd(), m4aFileName)!!
+            val newMetadata = TagLib.getMetadata(fd.dup().detachFd())!!
             Assert.assertEquals("Bee Moved (Remix)", newMetadata.propertyMap["TITLE"]!![0])
         }
 
-        val flacFileName = "是什么让我遇见这样的你 - 白安.flac"
-        getFdFromAssets(context, flacFileName).use { fd ->
-            val metadata = TagLib.getMetadata(fd.dup().detachFd(), flacFileName)!!
+        getFdFromAssets(context, "是什么让我遇见这样的你 - 白安.flac").use { fd ->
+            val metadata = TagLib.getMetadata(fd.dup().detachFd())!!
             Assert.assertEquals("是什么让我遇见这样的你", metadata.propertyMap["TITLE"]!![0])
 
-            val pictures = TagLib.getPictures(fd.dup().detachFd(), flacFileName)!!
+            val pictures = TagLib.getPictures(fd.dup().detachFd())!!
             Assert.assertEquals(42716, pictures[0].data.size)
         }
 
-        val multipleAlbumArtFileName = "multiple_album_art.flac"
-        getFdFromAssets(context, multipleAlbumArtFileName).use { fd ->
-            val pictures = TagLib.getPictures(fd.dup().detachFd(), flacFileName)!!
+        getFdFromAssets(context, "multiple_album_art.flac").use { fd ->
+            val pictures = TagLib.getPictures(fd.dup().detachFd())!!
             Assert.assertEquals(3, pictures.size)
             Assert.assertEquals(29766, pictures[2].data.size)
         }
@@ -68,12 +65,13 @@ class Tests {
     private fun getFileFromAssets(
         context: Context,
         fileName: String,
-    ): File =
-        File(context.cacheDir, fileName).also {
+    ): File {
+        return File(context.cacheDir, fileName).also {
             it.outputStream().use { cache ->
                 context.assets.open(fileName).use { inputStream ->
                     inputStream.copyTo(cache)
                 }
             }
         }
+    }
 }
