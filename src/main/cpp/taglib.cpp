@@ -184,6 +184,14 @@ TagLib::PropertyMap JniHashMapToPropertyMap(JNIEnv *env, jobject hashMap) {
     return propertyMap;
 }
 
+void throwJavaException(JNIEnv *env, const char *message) {
+    jclass exClass = env->FindClass("com/kyant/taglib/TagLibException");
+    if (exClass != nullptr) {
+        env->ThrowNew(exClass, message);
+    }
+    env->DeleteLocalRef(exClass);
+}
+
 
 extern "C" JNIEXPORT jobject JNICALL
 Java_com_kyant_taglib_TagLib_getMetadata(
@@ -194,43 +202,48 @@ Java_com_kyant_taglib_TagLib_getMetadata(
         jint read_style,
         jboolean read_lyrics
 ) {
-    auto stream = std::make_unique<TagLib::FileStream>(fd, true);
-    const char *file_name_c = env->GetStringUTFChars(file_name, nullptr);
-    auto style = static_cast<TagLib::AudioProperties::ReadStyle>(read_style);
-    TagLib::File *file = parse_stream(stream.get(), file_name_c, true, style);
-    env->ReleaseStringUTFChars(file_name, file_name_c);
+    try {
+        auto stream = std::make_unique<TagLib::FileStream>(fd, true);
+        const char *file_name_c = env->GetStringUTFChars(file_name, nullptr);
+        auto style = static_cast<TagLib::AudioProperties::ReadStyle>(read_style);
+        TagLib::File *file = parse_stream(stream.get(), file_name_c, true, style);
+        env->ReleaseStringUTFChars(file_name, file_name_c);
 
-    if (!file || !file->isValid()) {
+        if (!file || !file->isValid()) {
+            return nullptr;
+        }
+
+        auto audioProperties = file->audioProperties();
+        jobject audioPropertiesObject;
+        if (audioProperties) {
+            jint duration = static_cast<jint>(audioProperties->lengthInMilliseconds());
+            jint bitrate = static_cast<jint>(audioProperties->bitrate());
+            jint sampleRate = static_cast<jint>(audioProperties->sampleRate());
+            jint channels = static_cast<jint>(audioProperties->channels());
+            audioPropertiesObject = env->NewObject(
+                    audioPropertiesClass, audioPropertiesConstructor,
+                    duration, bitrate, sampleRate, channels);
+        } else {
+            audioPropertiesObject = env->NewObject(
+                    audioPropertiesClass, audioPropertiesConstructor,
+                    0, 0, 0, 0);
+        }
+
+        auto properties = file->properties();
+        if (!read_lyrics && properties.contains("LYRICS")) {
+            properties.erase("LYRICS");
+        }
+        jobject propertiesMap = PropertyMapToJniHashMap(env, properties);
+
+        jobject metadata = env->NewObject(
+                metadataClass, metadataConstructor,
+                audioPropertiesObject, propertiesMap
+        );
+        return metadata;
+    } catch (const std::exception &e) {
+        throwJavaException(env, e.what());
         return nullptr;
     }
-
-    auto audioProperties = file->audioProperties();
-    jobject audioPropertiesObject;
-    if (audioProperties) {
-        jint duration = static_cast<jint>(audioProperties->lengthInMilliseconds());
-        jint bitrate = static_cast<jint>(audioProperties->bitrate());
-        jint sampleRate = static_cast<jint>(audioProperties->sampleRate());
-        jint channels = static_cast<jint>(audioProperties->channels());
-        audioPropertiesObject = env->NewObject(
-                audioPropertiesClass, audioPropertiesConstructor,
-                duration, bitrate, sampleRate, channels);
-    } else {
-        audioPropertiesObject = env->NewObject(
-                audioPropertiesClass, audioPropertiesConstructor,
-                0, 0, 0, 0);
-    }
-
-    auto properties = file->properties();
-    if (!read_lyrics && properties.contains("LYRICS")) {
-        properties.erase("LYRICS");
-    }
-    jobject propertiesMap = PropertyMapToJniHashMap(env, properties);
-
-    jobject metadata = env->NewObject(
-            metadataClass, metadataConstructor,
-            audioPropertiesObject, propertiesMap
-    );
-    return metadata;
 }
 
 extern "C" JNIEXPORT jboolean JNICALL
@@ -241,19 +254,24 @@ Java_com_kyant_taglib_TagLib_savePropertyMap(
         jstring file_name,
         jobject property_map
 ) {
-    auto stream = std::make_unique<TagLib::FileStream>(fd, false);
-    const char *file_name_c = env->GetStringUTFChars(file_name, nullptr);
-    TagLib::File *file = parse_stream(stream.get(), file_name_c);
-    env->ReleaseStringUTFChars(file_name, file_name_c);
+    try {
+        auto stream = std::make_unique<TagLib::FileStream>(fd, false);
+        const char *file_name_c = env->GetStringUTFChars(file_name, nullptr);
+        TagLib::File *file = parse_stream(stream.get(), file_name_c);
+        env->ReleaseStringUTFChars(file_name, file_name_c);
 
-    if (!file || !file->isValid()) {
+        if (!file || !file->isValid()) {
+            return false;
+        }
+
+        auto propertiesMap = JniHashMapToPropertyMap(env, property_map);
+        file->setProperties(propertiesMap);
+        bool success = file->save();
+        return success;
+    } catch (const std::exception &e) {
+        throwJavaException(env, e.what());
         return false;
     }
-
-    auto propertiesMap = JniHashMapToPropertyMap(env, property_map);
-    file->setProperties(propertiesMap);
-    bool success = file->save();
-    return success;
 }
 
 extern "C" JNIEXPORT jstring JNICALL
@@ -263,22 +281,27 @@ Java_com_kyant_taglib_TagLib_getLyrics(
         jint fd,
         jstring file_name
 ) {
-    auto stream = std::make_unique<TagLib::FileStream>(fd, true);
-    const char *file_name_c = env->GetStringUTFChars(file_name, nullptr);
-    TagLib::File *file = parse_stream(stream.get(), file_name_c);
-    env->ReleaseStringUTFChars(file_name, file_name_c);
+    try {
+        auto stream = std::make_unique<TagLib::FileStream>(fd, true);
+        const char *file_name_c = env->GetStringUTFChars(file_name, nullptr);
+        TagLib::File *file = parse_stream(stream.get(), file_name_c);
+        env->ReleaseStringUTFChars(file_name, file_name_c);
 
-    if (!file || !file->isValid()) {
+        if (!file || !file->isValid()) {
+            return nullptr;
+        }
+
+        auto properties = file->properties();
+        if (!properties.contains("LYRICS")) {
+            return nullptr;
+        }
+
+        auto lyrics = properties.find("LYRICS")->second.front().toCString(true);
+        return env->NewStringUTF(lyrics);
+    } catch (const std::exception &e) {
+        throwJavaException(env, e.what());
         return nullptr;
     }
-
-    auto properties = file->properties();
-    if (!properties.contains("LYRICS")) {
-        return nullptr;
-    }
-
-    auto lyrics = properties.find("LYRICS")->second.front().toCString(true);
-    return env->NewStringUTF(lyrics);
 }
 
 extern "C" JNIEXPORT jobjectArray JNICALL
@@ -288,53 +311,58 @@ Java_com_kyant_taglib_TagLib_getPictures(
         jint fd,
         jstring file_name
 ) {
-    auto stream = std::make_unique<TagLib::FileStream>(fd, true);
-    const char *file_name_c = env->GetStringUTFChars(file_name, nullptr);
-    TagLib::File *file = parse_stream(stream.get(), file_name_c);
-    env->ReleaseStringUTFChars(file_name, file_name_c);
+    try {
+        auto stream = std::make_unique<TagLib::FileStream>(fd, true);
+        const char *file_name_c = env->GetStringUTFChars(file_name, nullptr);
+        TagLib::File *file = parse_stream(stream.get(), file_name_c);
+        env->ReleaseStringUTFChars(file_name, file_name_c);
 
-    if (!file || !file->isValid()) {
-        return nullptr;
-    }
-
-    auto pictures = file->complexProperties("PICTURE");
-    if (pictures.isEmpty()) {
-        return nullptr;
-    }
-
-    auto pictureIndex = 0;
-    jobjectArray pictureArray = env->NewObjectArray(pictures.size(), pictureClass, nullptr);
-    for (const auto &picture: pictures) {
-        auto pictureData = picture.value("data").toByteVector();
-        if (pictureData.isEmpty()) {
-            continue;
+        if (!file || !file->isValid()) {
+            return nullptr;
         }
 
-        auto description = picture.value("description").toString();
-        jstring jDescription = env->NewStringUTF(description.toCString(true));
-        auto pictureType = picture.value("pictureType").toString();
-        jstring jPictureType = env->NewStringUTF(pictureType.toCString(true));
-        auto mimeType = picture.value("mimeType").toString();
-        jstring jMimeType = env->NewStringUTF(mimeType.toCString(true));
-        jbyteArray bytes = env->NewByteArray(static_cast<jint>(pictureData.size()));
+        auto pictures = file->complexProperties("PICTURE");
+        if (pictures.isEmpty()) {
+            return nullptr;
+        }
 
-        env->SetByteArrayRegion(
-                bytes,
-                0,
-                static_cast<jint>(pictureData.size()),
-                reinterpret_cast<const jbyte *>(pictureData.data())
-        );
-        jobject pictureObject = env->NewObject(
-                pictureClass, pictureConstructor,
-                bytes, jDescription, jPictureType, jMimeType);
-        env->DeleteLocalRef(bytes);
-        env->DeleteLocalRef(jDescription);
-        env->DeleteLocalRef(jPictureType);
-        env->DeleteLocalRef(jMimeType);
-        env->SetObjectArrayElement(pictureArray, pictureIndex, pictureObject);
-        env->DeleteLocalRef(pictureObject);
-        pictureIndex++;
+        auto pictureIndex = 0;
+        jobjectArray pictureArray = env->NewObjectArray(pictures.size(), pictureClass, nullptr);
+        for (const auto &picture: pictures) {
+            auto pictureData = picture.value("data").toByteVector();
+            if (pictureData.isEmpty()) {
+                continue;
+            }
+
+            auto description = picture.value("description").toString();
+            jstring jDescription = env->NewStringUTF(description.toCString(true));
+            auto pictureType = picture.value("pictureType").toString();
+            jstring jPictureType = env->NewStringUTF(pictureType.toCString(true));
+            auto mimeType = picture.value("mimeType").toString();
+            jstring jMimeType = env->NewStringUTF(mimeType.toCString(true));
+            jbyteArray bytes = env->NewByteArray(static_cast<jint>(pictureData.size()));
+
+            env->SetByteArrayRegion(
+                    bytes,
+                    0,
+                    static_cast<jint>(pictureData.size()),
+                    reinterpret_cast<const jbyte *>(pictureData.data())
+            );
+            jobject pictureObject = env->NewObject(
+                    pictureClass, pictureConstructor,
+                    bytes, jDescription, jPictureType, jMimeType);
+            env->DeleteLocalRef(bytes);
+            env->DeleteLocalRef(jDescription);
+            env->DeleteLocalRef(jPictureType);
+            env->DeleteLocalRef(jMimeType);
+            env->SetObjectArrayElement(pictureArray, pictureIndex, pictureObject);
+            env->DeleteLocalRef(pictureObject);
+            pictureIndex++;
+        }
+
+        return pictureArray;
+    } catch (const std::exception &e) {
+        throwJavaException(env, e.what());
+        return nullptr;
     }
-
-    return pictureArray;
 }
