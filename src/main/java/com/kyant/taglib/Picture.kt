@@ -5,8 +5,7 @@ package com.kyant.taglib
  *
  * @param data ByteVector with picture data
  * @param description String with description
- * @param pictureType String with type as specified for ID3v2,
- * e.g. "Front Cover", "Back Cover", "Band"
+ * @param pictureType String with type as specified for ID3v2, e.g. "Front Cover", "Back Cover", "Band"
  * @param mimeType String with image format, e.g. "image/jpeg"
  */
 public data class Picture(
