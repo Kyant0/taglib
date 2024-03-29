@@ -51,7 +51,7 @@ extern "C" JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *) {
     metadataClass = reinterpret_cast<jclass>(env->NewGlobalRef(_metadataClass));
     env->DeleteLocalRef(_metadataClass);
     metadataConstructor = env->GetMethodID(metadataClass, "<init>",
-                                           "(Lcom/kyant/taglib/AudioProperties;Ljava/util/Map;)V");
+                                           "(Lcom/kyant/taglib/AudioProperties;Ljava/util/HashMap;)V");
 
     jclass _audioPropertiesClass = env->FindClass("com/kyant/taglib/AudioProperties");
     audioPropertiesClass = reinterpret_cast<jclass>(env->NewGlobalRef(_audioPropertiesClass));

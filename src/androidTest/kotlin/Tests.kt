@@ -28,15 +28,16 @@ class Tests {
 
             // Save metadata
 
+            val newTitle = "Bee Moved (Remix)"
             val newPropertyMap =
-                metadata.propertyMap.toMutableMap().apply {
-                    this["TITLE"] = arrayOf("Bee Moved (Remix)")
-                }.toMap()
+                metadata.propertyMap.apply {
+                    this["TITLE"] = arrayOf(newTitle)
+                }
             val saved = TagLib.savePropertyMap(fd.dup().detachFd(), newPropertyMap)
             Assert.assertTrue(saved)
 
             val newMetadata = TagLib.getMetadata(fd.dup().detachFd())!!
-            Assert.assertEquals("Bee Moved (Remix)", newMetadata.propertyMap["TITLE"]!![0])
+            Assert.assertEquals(newTitle, newMetadata.propertyMap["TITLE"]!![0])
         }
 
         getFdFromAssets(context, "是什么让我遇见这样的你 - 白安.flac").use { fd ->
@@ -51,6 +52,29 @@ class Tests {
             val pictures = TagLib.getPictures(fd.dup().detachFd())!!
             Assert.assertEquals(3, pictures.size)
             Assert.assertEquals(29766, pictures[2].data.size)
+        }
+
+        // Encode
+        getFdFromAssets(context, "bladeenc.mp3").use { fd ->
+            // Read metadata
+
+            val metadata = TagLib.getMetadata(fd.dup().detachFd())!!
+            println(metadata.propertyMap)
+            Assert.assertEquals("Test", metadata.propertyMap["TITLE"]!![0])
+
+            // Save metadata
+
+            val newTitle = "Test ú"
+            println(metadata.propertyMap["TITLE"]!!::class.java.name)
+            val newPropertyMap =
+                metadata.propertyMap.apply {
+                    this["TITLE"] = arrayOf(newTitle)
+                }
+            val saved = TagLib.savePropertyMap(fd.dup().detachFd(), newPropertyMap)
+            Assert.assertTrue(saved)
+
+            val newMetadata = TagLib.getMetadata(fd.dup().detachFd())!!
+            Assert.assertEquals(newTitle, newMetadata.propertyMap["TITLE"]!![0])
         }
     }
 
