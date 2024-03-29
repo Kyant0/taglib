@@ -60,39 +60,41 @@ class Tests {
             val originalPicture = pictures.single()
             Assert.assertEquals(42716, originalPicture.data.size)
 
-            // Save original pictures
+            // Save the original picture
 
             val saved = TagLib.savePictures(fd.dup().detachFd(), arrayOf(originalPicture))
             Assert.assertTrue(saved)
             Assert.assertEquals(originalPicture, TagLib.getPictures(fd.dup().detachFd())!!.single())
 
-            // Save new pictures
+            // Save new multiple pictures
 
-            val outputStream1 = ByteArrayOutputStream()
-            BitmapFactory
-                .decodeStream(context.assets.open("699_200x200.jpg"))
-                .compress(Bitmap.CompressFormat.JPEG, 100, outputStream1)
-            Assert.assertEquals(22266, outputStream1.size())
             val newPicture1 =
-                Picture(
-                    data = outputStream1.toByteArray(),
-                    description = "Front Cover",
-                    pictureType = "Front Cover",
-                    mimeType = "image/jpeg",
-                )
+                ByteArrayOutputStream().use {
+                    BitmapFactory
+                        .decodeStream(context.assets.open("699_200x200.jpg"))
+                        .compress(Bitmap.CompressFormat.JPEG, 100, it)
+                    Assert.assertEquals(22266, it.size())
+                    Picture(
+                        data = it.toByteArray(),
+                        description = "Front Cover",
+                        pictureType = "Front Cover",
+                        mimeType = "image/jpeg",
+                    )
+                }
 
-            val outputStream2 = ByteArrayOutputStream()
-            BitmapFactory
-                .decodeStream(context.assets.open("947_200x200.jpg"))
-                .compress(Bitmap.CompressFormat.JPEG, 100, outputStream2)
-            Assert.assertEquals(15297, outputStream2.size())
             val newPicture2 =
-                Picture(
-                    data = outputStream2.toByteArray(),
-                    description = "Back Cover",
-                    pictureType = "Back Cover",
-                    mimeType = "image/jpeg",
-                )
+                ByteArrayOutputStream().use {
+                    BitmapFactory
+                        .decodeStream(context.assets.open("947_200x200.jpg"))
+                        .compress(Bitmap.CompressFormat.JPEG, 100, it)
+                    Assert.assertEquals(15297, it.size())
+                    Picture(
+                        data = it.toByteArray(),
+                        description = "Back Cover",
+                        pictureType = "Back Cover",
+                        mimeType = "image/jpeg",
+                    )
+                }
 
             TagLib.savePictures(fd.dup().detachFd(), arrayOf(newPicture1, newPicture2))
             val newPictures = TagLib.getPictures(fd.dup().detachFd())!!
