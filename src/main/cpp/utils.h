@@ -27,6 +27,10 @@ jmethodID audioPropertiesConstructor = nullptr;
 
 jclass pictureClass = nullptr;
 jmethodID pictureConstructor = nullptr;
+jmethodID pictureGetData = nullptr;
+jmethodID pictureGetDescription = nullptr;
+jmethodID pictureGetPictureType = nullptr;
+jmethodID pictureGetMimeType = nullptr;
 
 jclass entrySetClass = nullptr;
 jmethodID iteratorMethod = nullptr;
@@ -73,6 +77,10 @@ extern "C" JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *) {
     env->DeleteLocalRef(_pictureClass);
     pictureConstructor = env->GetMethodID(pictureClass, "<init>",
                                           "([BLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)V");
+    pictureGetData = env->GetMethodID(pictureClass, "getData", "()[B");
+    pictureGetDescription = env->GetMethodID(pictureClass, "getDescription", "()Ljava/lang/String;");
+    pictureGetPictureType = env->GetMethodID(pictureClass, "getPictureType", "()Ljava/lang/String;");
+    pictureGetMimeType = env->GetMethodID(pictureClass, "getMimeType", "()Ljava/lang/String;");
 
     jclass _entrySetClass = env->FindClass("java/util/Set");
     entrySetClass = reinterpret_cast<jclass>(env->NewGlobalRef(_entrySetClass));
@@ -122,6 +130,10 @@ extern "C" JNIEXPORT void JNI_OnUnload(JavaVM *vm, void *) {
     audioPropertiesConstructor = nullptr;
     pictureClass = nullptr;
     pictureConstructor = nullptr;
+    pictureGetData = nullptr;
+    pictureGetDescription = nullptr;
+    pictureGetPictureType = nullptr;
+    pictureGetMimeType = nullptr;
     entrySetClass = nullptr;
     iteratorMethod = nullptr;
     entrySetMethod = nullptr;

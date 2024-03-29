@@ -132,13 +132,13 @@ Java_com_kyant_taglib_TagLib_getPictures(
                 continue;
             }
 
+            jbyteArray bytes = env->NewByteArray(static_cast<jint>(pictureData.size()));
             auto description = picture.value("description").toString();
             jstring jDescription = env->NewStringUTF(description.toCString(true));
             auto pictureType = picture.value("pictureType").toString();
             jstring jPictureType = env->NewStringUTF(pictureType.toCString(true));
             auto mimeType = picture.value("mimeType").toString();
             jstring jMimeType = env->NewStringUTF(mimeType.toCString(true));
-            jbyteArray bytes = env->NewByteArray(static_cast<jint>(pictureData.size()));
 
             env->SetByteArrayRegion(
                     bytes,
@@ -162,5 +162,54 @@ Java_com_kyant_taglib_TagLib_getPictures(
     } catch (const std::exception &e) {
         throwJavaException(env, e.what());
         return nullptr;
+    }
+}
+
+extern "C" JNIEXPORT jboolean JNICALL
+Java_com_kyant_taglib_TagLib_savePictures(
+        JNIEnv *env,
+        jobject /* this */,
+        jint fd,
+        jobjectArray pictures
+) {
+    try {
+        auto stream = std::make_unique<TagLib::FileStream>(fd, false);
+        TagLib::FileRef f(stream.get(), false);
+
+        if (f.isNull()) {
+            return false;
+        }
+
+        TagLib::List<TagLib::Map<TagLib::String, TagLib::Variant>> properties;
+        auto pictureCount = env->GetArrayLength(pictures);
+        for (auto i = 0; i < pictureCount; i++) {
+            auto pictureObject = env->GetObjectArrayElement(pictures, i);
+            auto bytes = reinterpret_cast<jbyteArray>(env->CallObjectMethod(pictureObject, pictureGetData));
+            auto description = reinterpret_cast<jstring>(env->CallObjectMethod(pictureObject, pictureGetDescription));
+            auto pictureType = reinterpret_cast<jstring>(env->CallObjectMethod(pictureObject, pictureGetPictureType));
+            auto mimeType = reinterpret_cast<jstring>(env->CallObjectMethod(pictureObject, pictureGetMimeType));
+
+            auto pictureData = env->GetByteArrayElements(bytes, nullptr);
+            auto pictureDataSize = env->GetArrayLength(bytes);
+            TagLib::ByteVector pictureDataVector(
+                    reinterpret_cast<const char *>(pictureData),
+                    static_cast<uint>(pictureDataSize)
+            );
+            env->ReleaseByteArrayElements(bytes, pictureData, JNI_ABORT);
+
+            TagLib::Map<TagLib::String, TagLib::Variant> pictureProperties;
+            pictureProperties["data"] = pictureDataVector;
+            pictureProperties["description"] = TagLib::String(env->GetStringUTFChars(description, nullptr));
+            pictureProperties["pictureType"] = TagLib::String(env->GetStringUTFChars(pictureType, nullptr));
+            pictureProperties["mimeType"] = TagLib::String(env->GetStringUTFChars(mimeType, nullptr));
+            properties.append(pictureProperties);
+        }
+
+        f.setComplexProperties("PICTURE", properties);
+        bool success = f.save();
+        return success;
+    } catch (const std::exception &e) {
+        throwJavaException(env, e.what());
+        return false;
     }
 }

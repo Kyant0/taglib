@@ -14,18 +14,22 @@ public data class Picture(
     val pictureType: String,
     val mimeType: String,
 ) {
+    override fun toString(): String {
+        return "Picture(data=[${data.size} bytes], " +
+            "description=$description, " +
+            "pictureType=$pictureType, " +
+            "mimeType=$mimeType)"
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as Picture
+        if (other !is Picture) return false
 
         if (!data.contentEquals(other.data)) return false
         if (description != other.description) return false
         if (pictureType != other.pictureType) return false
-        if (mimeType != other.mimeType) return false
 
-        return true
+        return mimeType == other.mimeType
     }
 
     override fun hashCode(): Int {

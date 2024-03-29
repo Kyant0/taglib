@@ -18,10 +18,11 @@ allprojects {
 implementation("com.github.Kyant0:taglib:<version>")
 ```
 
+## Functions
+
+* Get and save audio properties and all metadata of audio files.
+* Get and save cover art of audio files, support multiple cover arts.
+
 ## Example
 
 See [Tests.kt](/src/androidTest/kotlin/Tests.kt).
-
-## TODO
-
-- [ ] Support writing complex properties

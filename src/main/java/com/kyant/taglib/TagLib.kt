@@ -49,6 +49,19 @@ public object TagLib {
     public external fun getPictures(fd: Int): Array<Picture>?
 
     /**
+     * Save pictures by file descriptor.
+     *
+     * @param fd File descriptor
+     * @param pictures Pictures to save
+     *
+     * @return Whether the operation was successful
+     */
+    public external fun savePictures(
+        fd: Int,
+        pictures: Array<Picture>,
+    ): Boolean
+
+    /**
      * Get front cover from file descriptor.
      */
     public fun getFrontCover(fd: Int): Picture? =
