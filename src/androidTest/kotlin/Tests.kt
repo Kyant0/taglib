@@ -7,10 +7,16 @@ import org.junit.Test
 import java.io.File
 
 class Tests {
-    @Test
-    fun test() {
-        val context = InstrumentationRegistry.getInstrumentation().targetContext
+    private val context: Context = InstrumentationRegistry.getInstrumentation().targetContext
 
+    @Test
+    fun test_all() {
+        read_and_write_m4a()
+        read_flac_multiple_pictures()
+        ensure_utf8()
+    }
+
+    private fun read_and_write_m4a() {
         // Asset is from https://helpguide.sony.net/high-res/sample1/v1/en/index.html
         getFdFromAssets(context, "Sample_BeeMoved_48kHz16bit.m4a").use { fd ->
 
@@ -39,7 +45,9 @@ class Tests {
             val newMetadata = TagLib.getMetadata(fd.dup().detachFd())!!
             Assert.assertEquals(newTitle, newMetadata.propertyMap["TITLE"]!![0])
         }
+    }
 
+    private fun read_flac_multiple_pictures() {
         getFdFromAssets(context, "是什么让我遇见这样的你 - 白安.flac").use { fd ->
             val metadata = TagLib.getMetadata(fd.dup().detachFd())!!
             Assert.assertEquals("是什么让我遇见这样的你", metadata.propertyMap["TITLE"]!![0])
@@ -53,19 +61,19 @@ class Tests {
             Assert.assertEquals(3, pictures.size)
             Assert.assertEquals(29766, pictures[2].data.size)
         }
+    }
 
-        // Encode
+    private fun ensure_utf8() {
         getFdFromAssets(context, "bladeenc.mp3").use { fd ->
+
             // Read metadata
 
             val metadata = TagLib.getMetadata(fd.dup().detachFd())!!
-            println(metadata.propertyMap)
             Assert.assertEquals("Test", metadata.propertyMap["TITLE"]!![0])
 
             // Save metadata
 
             val newTitle = "Test ú"
-            println(metadata.propertyMap["TITLE"]!!::class.java.name)
             val newPropertyMap =
                 metadata.propertyMap.apply {
                     this["TITLE"] = arrayOf(newTitle)
