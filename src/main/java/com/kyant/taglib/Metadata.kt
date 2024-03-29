@@ -8,6 +8,7 @@ public data class Metadata(
     val propertyMap: PropertyMap,
 ) {
     override fun toString(): String {
-        return "Metadata(audioProperties=$audioProperties, propertyMap=${propertyMap.mapValues { it.value.contentToString() }})"
+        return "Metadata(audioProperties=$audioProperties, " +
+            "propertyMap=${propertyMap.mapValues { it.value.contentToString() }})"
     }
 }

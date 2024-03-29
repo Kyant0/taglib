@@ -76,13 +76,13 @@ class Tests {
             val newTitle = "Test ú"
             val newPropertyMap =
                 metadata.propertyMap.apply {
-                    this["TITLE"] = arrayOf(newTitle)
+                    this["TITLE ú"] = arrayOf(newTitle)
                 }
             val saved = TagLib.savePropertyMap(fd.dup().detachFd(), newPropertyMap)
             Assert.assertTrue(saved)
 
             val newMetadata = TagLib.getMetadata(fd.dup().detachFd())!!
-            Assert.assertEquals(newTitle, newMetadata.propertyMap["TITLE"]!![0])
+            Assert.assertEquals(newTitle, newMetadata.propertyMap["TITLE ú"]!![0])
         }
     }
 
