@@ -100,7 +100,9 @@ jobjectArray StringListToJniStringArray(JNIEnv *env, const TagLib::StringList &s
     jobjectArray array = env->NewObjectArray(stringList.size(), stringClass, nullptr);
     int i = 0;
     for (const auto &str: stringList) {
-        env->SetObjectArrayElement(array, i, env->NewStringUTF(str.toCString(true)));
+        jstring jStr = env->NewStringUTF(str.toCString(true));
+        env->SetObjectArrayElement(array, i, jStr);
+        env->DeleteLocalRef(jStr);
         i++;
     }
     return array;
@@ -111,12 +113,12 @@ jobject PropertyMapToJniHashMap(JNIEnv *env, const TagLib::PropertyMap &property
     jobject hashMap = env->NewObject(hashMapClass, hashMapInit, static_cast<jint>(propertyMap.size()));
 
     for (const auto &it: propertyMap) {
-        const std::string key = it.first.toCString(true);
+        const char *key = it.first.toCString(true);
         const TagLib::StringList &valueList = it.second;
 
         jobjectArray valueArray = StringListToJniStringArray(env, valueList);
 
-        jstring jKey = env->NewStringUTF(key.c_str());
+        jstring jKey = env->NewStringUTF(key);
         env->CallObjectMethod(hashMap, hashMapPut, jKey, valueArray);
 
         env->DeleteLocalRef(jKey);
@@ -133,11 +135,9 @@ TagLib::StringList JniStringArrayToStringList(JNIEnv *env, jobjectArray stringAr
     jsize arrayLength = env->GetArrayLength(stringArray);
     for (jsize i = 0; i < arrayLength; ++i) {
         jstring jStr = static_cast<jstring>(env->GetObjectArrayElement(stringArray, i));
-        const char *cStr = env->GetStringUTFChars(jStr, nullptr);
-
-        stringList.append(cStr);
-
-        env->ReleaseStringUTFChars(jStr, cStr);
+        const char *utf8Str = env->GetStringUTFChars(jStr, nullptr);
+        stringList.append(TagLib::String(utf8Str, TagLib::String::UTF8));
+        env->ReleaseStringUTFChars(jStr, utf8Str);
         env->DeleteLocalRef(jStr);
     }
 
