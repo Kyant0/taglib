@@ -26,15 +26,10 @@ class Tests {
 
             // Read metadata
 
-            val metadata = TagLib.getMetadata(fd.dup().detachFd(), withLyrics = true)!!
+            val metadata = TagLib.getMetadata(fd = fd.dup().detachFd(), readPictures = true)!!
             Assert.assertEquals(39936, metadata.audioProperties.length)
             Assert.assertEquals("Bee Moved", metadata.propertyMap["TITLE"]!!.single())
-
-            val pictures = TagLib.getPictures(fd.dup().detachFd())!!
-            Assert.assertEquals(58336, pictures.single().data.size)
-
-            val lyrics = TagLib.getLyrics(fd.dup().detachFd())
-            Assert.assertNull(lyrics)
+            Assert.assertEquals(58336, metadata.pictures.single().data.size)
 
             // Save metadata
 
@@ -56,7 +51,7 @@ class Tests {
             val metadata = TagLib.getMetadata(fd.dup().detachFd())!!
             Assert.assertEquals("是什么让我遇见这样的你", metadata.propertyMap["TITLE"]!!.single())
 
-            val pictures = TagLib.getPictures(fd.dup().detachFd())!!
+            val pictures = TagLib.getPictures(fd.dup().detachFd())
             val originalPicture = pictures.single()
             Assert.assertEquals(42716, originalPicture.data.size)
 
@@ -64,7 +59,7 @@ class Tests {
 
             val saved = TagLib.savePictures(fd.dup().detachFd(), arrayOf(originalPicture))
             Assert.assertTrue(saved)
-            Assert.assertEquals(originalPicture, TagLib.getPictures(fd.dup().detachFd())!!.single())
+            Assert.assertEquals(originalPicture, TagLib.getPictures(fd.dup().detachFd()).single())
 
             // Save new multiple pictures
 
@@ -97,7 +92,7 @@ class Tests {
                 }
 
             TagLib.savePictures(fd.dup().detachFd(), arrayOf(newPicture1, newPicture2))
-            val newPictures = TagLib.getPictures(fd.dup().detachFd())!!
+            val newPictures = TagLib.getPictures(fd.dup().detachFd())
             Assert.assertEquals(2, newPictures.size)
             Assert.assertEquals(newPicture1, newPictures[0])
             Assert.assertEquals(newPicture2, newPictures[1])
@@ -106,12 +101,13 @@ class Tests {
 
     private fun read_flac_multiple_pictures() {
         getFdFromAssets(context, "multiple_album_art.flac").use { fd ->
-            val pictures = TagLib.getPictures(fd.dup().detachFd())!!
+            val pictures = TagLib.getPictures(fd.dup().detachFd())
             Assert.assertEquals(3, pictures.size)
             Assert.assertEquals(29766, pictures[2].data.size)
         }
     }
 
+    @Suppress("SpellCheckingInspection")
     private fun ensure_utf8() {
         getFdFromAssets(context, "bladeenc.mp3").use { fd ->
 

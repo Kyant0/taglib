@@ -2,6 +2,7 @@
 #define TAGLIB_UTILS_H
 
 #include <android/log.h>
+#include "fileref.h"
 #include "tdebuglistener.h"
 #include "tpropertymap.h"
 
@@ -65,7 +66,7 @@ extern "C" JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *) {
     metadataClass = reinterpret_cast<jclass>(env->NewGlobalRef(_metadataClass));
     env->DeleteLocalRef(_metadataClass);
     metadataConstructor = env->GetMethodID(metadataClass, "<init>",
-                                           "(Lcom/kyant/taglib/AudioProperties;Ljava/util/HashMap;)V");
+                                           "(Lcom/kyant/taglib/AudioProperties;Ljava/util/HashMap;[Lcom/kyant/taglib/Picture;)V");
 
     jclass _audioPropertiesClass = env->FindClass("com/kyant/taglib/AudioProperties");
     audioPropertiesClass = reinterpret_cast<jclass>(env->NewGlobalRef(_audioPropertiesClass));
@@ -220,6 +221,113 @@ TagLib::PropertyMap JniHashMapToPropertyMap(JNIEnv *env, jobject hashMap) {
     }
 
     return propertyMap;
+}
+
+// Helper function to convert C++ PictureList to JNI Picture array
+jobjectArray PictureListToJniPictureArray(
+        JNIEnv *env,
+        const TagLib::List<TagLib::Map<TagLib::String, TagLib::Variant>> &pictureList
+) {
+    jobjectArray array = env->NewObjectArray(pictureList.size(), pictureClass, nullptr);
+    int i = 0;
+    for (const auto &picture: pictureList) {
+        auto pictureData = picture["data"].toByteVector();
+        if (pictureData.isEmpty()) {
+            continue;
+        }
+
+        jbyteArray bytes = env->NewByteArray(static_cast<jint>(pictureData.size()));
+        auto description = picture["description"].toString();
+        jstring jDescription = env->NewStringUTF(description.toCString(true));
+        auto pictureType = picture["pictureType"].toString();
+        jstring jPictureType = env->NewStringUTF(pictureType.toCString(true));
+        auto mimeType = picture["mimeType"].toString();
+        jstring jMimeType = env->NewStringUTF(mimeType.toCString(true));
+
+        env->SetByteArrayRegion(
+                bytes,
+                0,
+                static_cast<jint>(pictureData.size()),
+                reinterpret_cast<const jbyte *>(pictureData.data())
+        );
+        jobject pictureObject = env->NewObject(
+                pictureClass, pictureConstructor,
+                bytes, jDescription, jPictureType, jMimeType);
+        env->DeleteLocalRef(bytes);
+        env->DeleteLocalRef(jDescription);
+        env->DeleteLocalRef(jPictureType);
+        env->DeleteLocalRef(jMimeType);
+        env->SetObjectArrayElement(array, i, pictureObject);
+        env->DeleteLocalRef(pictureObject);
+        i++;
+    }
+    return array;
+}
+
+// Helper function to convert JNI Picture array to C++ PictureList
+TagLib::List<TagLib::Map<TagLib::String, TagLib::Variant>>
+JniPictureArrayToPictureList(JNIEnv *env, jobjectArray pictures) {
+    TagLib::List<TagLib::Map<TagLib::String, TagLib::Variant>> pictureList;
+
+    int pictureCount = env->GetArrayLength(pictures);
+    for (int i = 0; i < pictureCount; i++) {
+        auto pictureObject = env->GetObjectArrayElement(pictures, i);
+        auto bytes = reinterpret_cast<jbyteArray>(env->CallObjectMethod(pictureObject, pictureGetData));
+        auto description = reinterpret_cast<jstring>(env->CallObjectMethod(pictureObject, pictureGetDescription));
+        auto pictureType = reinterpret_cast<jstring>(env->CallObjectMethod(pictureObject, pictureGetPictureType));
+        auto mimeType = reinterpret_cast<jstring>(env->CallObjectMethod(pictureObject, pictureGetMimeType));
+
+        auto pictureData = env->GetByteArrayElements(bytes, nullptr);
+        auto pictureDataSize = env->GetArrayLength(bytes);
+        TagLib::ByteVector pictureDataVector(
+                reinterpret_cast<const char *>(pictureData),
+                static_cast<uint>(pictureDataSize)
+        );
+        env->ReleaseByteArrayElements(bytes, pictureData, JNI_ABORT);
+
+        TagLib::Map<TagLib::String, TagLib::Variant> picture;
+        picture["data"] = pictureDataVector;
+        picture["description"] = TagLib::String(env->GetStringUTFChars(description, nullptr));
+        picture["pictureType"] = TagLib::String(env->GetStringUTFChars(pictureType, nullptr));
+        picture["mimeType"] = TagLib::String(env->GetStringUTFChars(mimeType, nullptr));
+        pictureList.append(picture);
+    }
+
+    return pictureList;
+}
+
+jobject getAudioProperties(JNIEnv *env, const TagLib::FileRef &f) {
+    auto audioProperties = f.audioProperties();
+    jobject audioPropertiesObject;
+    if (audioProperties) {
+        jint duration = static_cast<jint>(audioProperties->lengthInMilliseconds());
+        jint bitrate = static_cast<jint>(audioProperties->bitrate());
+        jint sampleRate = static_cast<jint>(audioProperties->sampleRate());
+        jint channels = static_cast<jint>(audioProperties->channels());
+        audioPropertiesObject = env->NewObject(
+                audioPropertiesClass, audioPropertiesConstructor,
+                duration, bitrate, sampleRate, channels);
+    } else {
+        audioPropertiesObject = env->NewObject(
+                audioPropertiesClass, audioPropertiesConstructor,
+                0, 0, 0, 0);
+    }
+    return audioPropertiesObject;
+}
+
+jobject getPropertyMap(JNIEnv *env, const TagLib::FileRef &f) {
+    auto properties = f.properties();
+    return PropertyMapToJniHashMap(env, properties);
+}
+
+jobjectArray getPictures(JNIEnv *env, const TagLib::FileRef &f) {
+    auto pictures = f.complexProperties("PICTURE");
+    jobjectArray pictureArray = PictureListToJniPictureArray(env, pictures);
+    return pictureArray;
+}
+
+jobjectArray emptyPictureArray(JNIEnv *env) {
+    return env->NewObjectArray(0, pictureClass, nullptr);
 }
 
 void throwJavaException(JNIEnv *env, const char *message) {

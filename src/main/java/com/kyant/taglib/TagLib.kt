@@ -7,7 +7,7 @@ public object TagLib {
     private external fun getMetadata(
         fd: Int,
         readStyle: Int,
-        withLyrics: Boolean,
+        readPictures: Boolean,
     ): Metadata?
 
     /**
@@ -15,14 +15,40 @@ public object TagLib {
      *
      * @param fd File descriptor
      * @param readStyle Read style for audio properties to balance speed and accuracy
-     * @param withLyrics Whether to read lyrics. Note if you want to save the property map later,
-     * you must set this to `true` in case the lyrics are erased
+     * @param readPictures Whether to read pictures
      */
     public fun getMetadata(
         fd: Int,
         readStyle: AudioPropertiesReadStyle = AudioPropertiesReadStyle.Average,
-        withLyrics: Boolean = false,
-    ): Metadata? = getMetadata(fd, readStyle.ordinal, withLyrics)
+        readPictures: Boolean = true,
+    ): Metadata? = getMetadata(fd, readStyle.ordinal, readPictures)
+
+    /**
+     * Get lyrics from file descriptor. This method is equivalent to
+     * `getMetadata(fd, withLyrics = true)?.propertyMap["LYRICS"]?.getOrNull(0)`
+     */
+    @Deprecated(
+        "Use getMetadata instead",
+        ReplaceWith(
+            "getMetadata(fd)?.propertyMap?.get(\"LYRICS\")?.firstOrNull()",
+            "com.kyant.taglib.TagLib.getMetadata",
+        ),
+    )
+    public fun getLyrics(fd: Int): String? = getMetadata(fd)?.propertyMap?.get("LYRICS")?.firstOrNull()
+
+    /**
+     * Get pictures from file descriptor. There may be multiple pictures with different types.
+     */
+    public external fun getPictures(fd: Int): Array<Picture>
+
+    /**
+     * Get front cover from file descriptor.
+     */
+    public fun getFrontCover(fd: Int): Picture? {
+        val pictures = getPictures(fd)
+        return pictures.find { picture -> picture.pictureType == "Front Cover" }
+            ?: pictures.firstOrNull()
+    }
 
     /**
      * Save metadata by file descriptor.
@@ -38,17 +64,6 @@ public object TagLib {
     ): Boolean
 
     /**
-     * Get lyrics from file descriptor. This method is equivalent to
-     * `getMetadata(fd, withLyrics = true)?.propertyMap["LYRICS"]?.getOrNull(0)`
-     */
-    public external fun getLyrics(fd: Int): String?
-
-    /**
-     * Get pictures from file descriptor. There may be multiple pictures with different types.
-     */
-    public external fun getPictures(fd: Int): Array<Picture>?
-
-    /**
      * Save pictures by file descriptor.
      *
      * @param fd File descriptor
@@ -60,14 +75,6 @@ public object TagLib {
         fd: Int,
         pictures: Array<Picture>,
     ): Boolean
-
-    /**
-     * Get front cover from file descriptor.
-     */
-    public fun getFrontCover(fd: Int): Picture? =
-        getPictures(fd)?.let { pictures ->
-            pictures.find { picture -> picture.pictureType == "Front Cover" } ?: pictures.firstOrNull()
-        }
 
     init {
         System.loadLibrary("taglib")
