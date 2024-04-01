@@ -1,18 +1,8 @@
 #ifndef TAGLIB_UTILS_H
 #define TAGLIB_UTILS_H
 
-#include <android/log.h>
 #include "fileref.h"
-#include "tdebuglistener.h"
 #include "tpropertymap.h"
-
-class DebugListener : public TagLib::DebugListener {
-    void printMessage(const TagLib::String &msg) override {
-        __android_log_print(ANDROID_LOG_VERBOSE, "TagLib", "%s", msg.toCString(true));
-    }
-};
-
-DebugListener listener;
 
 jclass stringClass = nullptr;
 
@@ -101,8 +91,6 @@ extern "C" JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *) {
     getKeyMethod = env->GetMethodID(mapEntryClass, "getKey", "()Ljava/lang/Object;");
     getValueMethod = env->GetMethodID(mapEntryClass, "getValue", "()Ljava/lang/Object;");
 
-    TagLib::setDebugListener(&listener);
-
     return JNI_VERSION_1_6;
 }
 
@@ -144,8 +132,6 @@ extern "C" JNIEXPORT void JNI_OnUnload(JavaVM *vm, void *) {
     mapEntryClass = nullptr;
     getKeyMethod = nullptr;
     getValueMethod = nullptr;
-
-    TagLib::setDebugListener(nullptr);
 }
 
 // Helper function to convert C++ StringList to JNI String array
