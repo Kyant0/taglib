@@ -24,19 +24,6 @@ public object TagLib {
     ): Metadata? = getMetadata(fd, readStyle.ordinal, readPictures)
 
     /**
-     * Get lyrics from file descriptor. This method is equivalent to
-     * `getMetadata(fd, withLyrics = true)?.propertyMap["LYRICS"]?.getOrNull(0)`
-     */
-    @Deprecated(
-        "Use getMetadata instead",
-        ReplaceWith(
-            "getMetadata(fd)?.propertyMap?.get(\"LYRICS\")?.firstOrNull()",
-            "com.kyant.taglib.TagLib.getMetadata",
-        ),
-    )
-    public fun getLyrics(fd: Int): String? = getMetadata(fd)?.propertyMap?.get("LYRICS")?.firstOrNull()
-
-    /**
      * Get pictures from file descriptor. There may be multiple pictures with different types.
      */
     public external fun getPictures(fd: Int): Array<Picture>
