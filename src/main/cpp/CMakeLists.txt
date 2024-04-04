@@ -5,7 +5,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden -flto -fdata-sections -f
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -flto -fdata-sections -ffunction-sections -fomit-frame-pointer")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--exclude-libs,ALL -flto -Wl,--gc-sections -s")
 
-add_subdirectory(taglib_lite)
+add_subdirectory(taglib)
 
 include_directories(
         ${taglib_SOURCE_DIR}/taglib
