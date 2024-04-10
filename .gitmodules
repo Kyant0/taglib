@@ -1,4 +1,1 @@
-[submodule "src/main/cpp/taglib"]
-	path = src/main/cpp/taglib
-	url = https://github.com/taglib/taglib.git
-	branch = v2.0.1
+
