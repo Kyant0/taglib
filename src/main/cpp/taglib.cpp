@@ -1,8 +1,7 @@
-#include <jni.h>
 #include "utils.h"
-#include "tfilestream.h"
 
-extern "C" JNIEXPORT jobject JNICALL
+extern "C" {
+JNIEXPORT jobject JNICALL
 Java_com_kyant_taglib_TagLib_getMetadata(
         JNIEnv *env,
         jobject /* this */,
@@ -11,9 +10,9 @@ Java_com_kyant_taglib_TagLib_getMetadata(
         jboolean read_pictures
 ) {
     try {
-        auto stream = std::make_unique<TagLib::FileStream>(fd, true);
+        auto path = getRealPathFromFd(fd);
         auto style = static_cast<TagLib::AudioProperties::ReadStyle>(read_style);
-        TagLib::FileRef f(stream.get(), true, style);
+        TagLib::FileRef f(path, true, style);
 
         if (f.isNull()) {
             return nullptr;
@@ -32,6 +31,7 @@ Java_com_kyant_taglib_TagLib_getMetadata(
                 metadataClass, metadataConstructor,
                 audioProperties, propertiesMap, pictures
         );
+        free(path);
         return metadata;
     } catch (const std::exception &e) {
         throwJavaException(env, e.what());
@@ -39,21 +39,22 @@ Java_com_kyant_taglib_TagLib_getMetadata(
     }
 }
 
-extern "C" JNIEXPORT jobjectArray JNICALL
+JNIEXPORT jobjectArray JNICALL
 Java_com_kyant_taglib_TagLib_getPictures(
         JNIEnv *env,
         jobject /* this */,
         jint fd
 ) {
     try {
-        auto stream = std::make_unique<TagLib::FileStream>(fd, true);
-        TagLib::FileRef f(stream.get(), false);
+        auto path = getRealPathFromFd(fd);
+        TagLib::FileRef f(path, false);
 
         if (f.isNull()) {
             return emptyPictureArray(env);
         }
 
         jobjectArray pictures = getPictures(env, f);
+        free(path);
         return pictures;
     } catch (const std::exception &e) {
         throwJavaException(env, e.what());
@@ -61,7 +62,7 @@ Java_com_kyant_taglib_TagLib_getPictures(
     }
 }
 
-extern "C" JNIEXPORT jboolean JNICALL
+JNIEXPORT jboolean JNICALL
 Java_com_kyant_taglib_TagLib_savePropertyMap(
         JNIEnv *env,
         jobject /* this */,
@@ -69,8 +70,8 @@ Java_com_kyant_taglib_TagLib_savePropertyMap(
         jobject property_map
 ) {
     try {
-        auto stream = std::make_unique<TagLib::FileStream>(fd, false);
-        TagLib::FileRef f(stream.get(), false);
+        auto path = getRealPathFromFd(fd);
+        TagLib::FileRef f(path, false);
 
         if (f.isNull()) {
             return false;
@@ -79,6 +80,7 @@ Java_com_kyant_taglib_TagLib_savePropertyMap(
         auto propertyMap = JniHashMapToPropertyMap(env, property_map);
         f.setProperties(propertyMap);
         bool success = f.save();
+        free(path);
         return success;
     } catch (const std::exception &e) {
         throwJavaException(env, e.what());
@@ -86,7 +88,7 @@ Java_com_kyant_taglib_TagLib_savePropertyMap(
     }
 }
 
-extern "C" JNIEXPORT jboolean JNICALL
+JNIEXPORT jboolean JNICALL
 Java_com_kyant_taglib_TagLib_savePictures(
         JNIEnv *env,
         jobject /* this */,
@@ -94,8 +96,8 @@ Java_com_kyant_taglib_TagLib_savePictures(
         jobjectArray pictures
 ) {
     try {
-        auto stream = std::make_unique<TagLib::FileStream>(fd, false);
-        TagLib::FileRef f(stream.get(), false);
+        auto path = getRealPathFromFd(fd);
+        TagLib::FileRef f(path, false);
 
         if (f.isNull()) {
             return false;
@@ -104,9 +106,11 @@ Java_com_kyant_taglib_TagLib_savePictures(
         auto pictureList = JniPictureArrayToPictureList(env, pictures);
         f.setComplexProperties("PICTURE", pictureList);
         bool success = f.save();
+        free(path);
         return success;
     } catch (const std::exception &e) {
         throwJavaException(env, e.what());
         return false;
     }
+}
 }

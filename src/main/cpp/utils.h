@@ -1,6 +1,8 @@
 #ifndef TAGLIB_UTILS_H
 #define TAGLIB_UTILS_H
 
+#include <jni.h>
+#include <unistd.h>
 #include "fileref.h"
 #include "tpropertymap.h"
 
@@ -314,6 +316,28 @@ jobjectArray getPictures(JNIEnv *env, const TagLib::FileRef &f) {
 
 jobjectArray emptyPictureArray(JNIEnv *env) {
     return env->NewObjectArray(0, pictureClass, nullptr);
+}
+
+char *getRealPathFromFd(int fd) {
+    char path[32];
+    sprintf(path, "/proc/self/fd/%d", fd);
+
+    // Dynamically allocate memory for link buffer
+    size_t size = 128; // Initial size
+    char *link = (char *) malloc(size);
+
+    ssize_t bytesRead;
+    while ((bytesRead = readlink(path, link, size)) == static_cast<ssize_t>(size)) {
+        // Enlarge the buffer
+        size *= 2;
+        char *temp = (char *) realloc(link, size);
+        link = temp;
+    }
+
+    // Null-terminate the string
+    link[bytesRead] = '\0';
+
+    return link;
 }
 
 void throwJavaException(JNIEnv *env, const char *message) {
