@@ -138,7 +138,7 @@ extern "C" JNIEXPORT void JNI_OnUnload(JavaVM *vm, void *) {
 
 // Helper function to convert C++ StringList to JNI String array
 jobjectArray StringListToJniStringArray(JNIEnv *env, const TagLib::StringList &stringList) {
-    jobjectArray array = env->NewObjectArray(stringList.size(), stringClass, nullptr);
+    jobjectArray array = env->NewObjectArray(static_cast<jsize>(stringList.size()), stringClass, nullptr);
     int i = 0;
     for (const auto &str: stringList) {
         jstring jStr = env->NewStringUTF(str.toCString(true));
@@ -175,7 +175,7 @@ TagLib::StringList JniStringArrayToStringList(JNIEnv *env, jobjectArray stringAr
 
     jsize arrayLength = env->GetArrayLength(stringArray);
     for (jsize i = 0; i < arrayLength; ++i) {
-        jstring jStr = static_cast<jstring>(env->GetObjectArrayElement(stringArray, i));
+        auto jStr = reinterpret_cast<jstring>(env->GetObjectArrayElement(stringArray, i));
         const char *cStr = env->GetStringUTFChars(jStr, nullptr);
         stringList.append(TagLib::String(cStr, TagLib::String::UTF8));
         env->ReleaseStringUTFChars(jStr, cStr);
@@ -197,12 +197,12 @@ TagLib::PropertyMap JniHashMapToPropertyMap(JNIEnv *env, jobject hashMap) {
         jobject key = env->CallObjectMethod(entry, getKeyMethod);
         jobject value = env->CallObjectMethod(entry, getValueMethod);
 
-        const char *keyStr = env->GetStringUTFChars(static_cast<jstring>(key), nullptr);
-        const auto valueList = JniStringArrayToStringList(env, static_cast<jobjectArray>(value));
+        const char *keyStr = env->GetStringUTFChars(reinterpret_cast<jstring>(key), nullptr);
+        const auto valueList = JniStringArrayToStringList(env, reinterpret_cast<jobjectArray>(value));
 
         propertyMap[TagLib::String(keyStr, TagLib::String::UTF8)] = valueList;
 
-        env->ReleaseStringUTFChars(static_cast<jstring>(key), keyStr);
+        env->ReleaseStringUTFChars(reinterpret_cast<jstring>(key), keyStr);
         env->DeleteLocalRef(entry);
         env->DeleteLocalRef(key);
         env->DeleteLocalRef(value);
@@ -216,7 +216,7 @@ jobjectArray PictureListToJniPictureArray(
         JNIEnv *env,
         const TagLib::List<TagLib::Map<TagLib::String, TagLib::Variant>> &pictureList
 ) {
-    jobjectArray array = env->NewObjectArray(pictureList.size(), pictureClass, nullptr);
+    jobjectArray array = env->NewObjectArray(static_cast<jsize>(pictureList.size()), pictureClass, nullptr);
     int i = 0;
     for (const auto &picture: pictureList) {
         auto pictureData = picture["data"].toByteVector();
