@@ -13,8 +13,7 @@ include_directories(
         taglib/taglib/toolkit)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
-        taglib.cpp
-        taglib/3rdparty/utfcpp/source/utf8.h)
+        taglib.cpp)
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
         android
