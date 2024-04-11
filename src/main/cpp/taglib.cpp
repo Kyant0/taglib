@@ -12,7 +12,7 @@ Java_com_kyant_taglib_TagLib_getMetadata(
     try {
         auto path = getRealPathFromFd(fd);
         auto style = static_cast<TagLib::AudioProperties::ReadStyle>(read_style);
-        TagLib::FileRef f(path, true, style);
+        TagLibExt::FileRef f(path, true, true, style);
 
         if (f.isNull()) {
             return nullptr;
@@ -47,7 +47,7 @@ Java_com_kyant_taglib_TagLib_getPictures(
 ) {
     try {
         auto path = getRealPathFromFd(fd);
-        TagLib::FileRef f(path, false);
+        TagLibExt::FileRef f(path, true, false);
 
         if (f.isNull()) {
             return emptyPictureArray(env);
@@ -71,7 +71,7 @@ Java_com_kyant_taglib_TagLib_savePropertyMap(
 ) {
     try {
         auto path = getRealPathFromFd(fd);
-        TagLib::FileRef f(path, false);
+        TagLibExt::FileRef f(path, false, false);
 
         if (f.isNull()) {
             return false;
@@ -97,7 +97,7 @@ Java_com_kyant_taglib_TagLib_savePictures(
 ) {
     try {
         auto path = getRealPathFromFd(fd);
-        TagLib::FileRef f(path, false);
+        TagLibExt::FileRef f(path, false, false);
 
         if (f.isNull()) {
             return false;

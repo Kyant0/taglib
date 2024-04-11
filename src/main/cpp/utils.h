@@ -3,7 +3,7 @@
 
 #include <jni.h>
 #include <unistd.h>
-#include "fileref.h"
+#include "fileref_ext.h"
 #include "tpropertymap.h"
 
 jclass stringClass = nullptr;
@@ -284,7 +284,7 @@ JniPictureArrayToPictureList(JNIEnv *env, jobjectArray pictures) {
     return pictureList;
 }
 
-jobject getAudioProperties(JNIEnv *env, const TagLib::FileRef &f) {
+jobject getAudioProperties(JNIEnv *env, const TagLibExt::FileRef &f) {
     auto audioProperties = f.audioProperties();
     jobject audioPropertiesObject;
     if (audioProperties) {
@@ -303,12 +303,12 @@ jobject getAudioProperties(JNIEnv *env, const TagLib::FileRef &f) {
     return audioPropertiesObject;
 }
 
-jobject getPropertyMap(JNIEnv *env, const TagLib::FileRef &f) {
+jobject getPropertyMap(JNIEnv *env, const TagLibExt::FileRef &f) {
     auto properties = f.properties();
     return PropertyMapToJniHashMap(env, properties);
 }
 
-jobjectArray getPictures(JNIEnv *env, const TagLib::FileRef &f) {
+jobjectArray getPictures(JNIEnv *env, const TagLibExt::FileRef &f) {
     auto pictures = f.complexProperties("PICTURE");
     jobjectArray pictureArray = PictureListToJniPictureArray(env, pictures);
     return pictureArray;
