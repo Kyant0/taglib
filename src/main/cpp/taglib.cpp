@@ -1,18 +1,20 @@
+#include "tfilestream.h"
 #include "utils.h"
 
 extern "C" {
 JNIEXPORT jobject JNICALL
 Java_com_kyant_taglib_TagLib_getMetadata(
         JNIEnv *env,
-        jobject /* this */,
+        jobject,
         jint fd,
         jint read_style,
         jboolean read_pictures
 ) {
     try {
         auto path = getRealPathFromFd(fd);
+        auto stream = std::make_unique<TagLib::FileStream>(fd, true);
         auto style = static_cast<TagLib::AudioProperties::ReadStyle>(read_style);
-        TagLibExt::FileRef f(path, true, true, style);
+        TagLibExt::FileRef f(path, stream.get(), true, style);
 
         if (f.isNull()) {
             return nullptr;
@@ -42,12 +44,13 @@ Java_com_kyant_taglib_TagLib_getMetadata(
 JNIEXPORT jobjectArray JNICALL
 Java_com_kyant_taglib_TagLib_getPictures(
         JNIEnv *env,
-        jobject /* this */,
+        jobject,
         jint fd
 ) {
     try {
         auto path = getRealPathFromFd(fd);
-        TagLibExt::FileRef f(path, true, false);
+        auto stream = std::make_unique<TagLib::FileStream>(fd, true);
+        TagLibExt::FileRef f(path, stream.get(), false);
 
         if (f.isNull()) {
             return emptyPictureArray(env);
@@ -65,13 +68,14 @@ Java_com_kyant_taglib_TagLib_getPictures(
 JNIEXPORT jboolean JNICALL
 Java_com_kyant_taglib_TagLib_savePropertyMap(
         JNIEnv *env,
-        jobject /* this */,
+        jobject,
         jint fd,
         jobject property_map
 ) {
     try {
         auto path = getRealPathFromFd(fd);
-        TagLibExt::FileRef f(path, false, false);
+        auto stream = std::make_unique<TagLib::FileStream>(fd, false);
+        TagLibExt::FileRef f(path, stream.get(), false);
 
         if (f.isNull()) {
             return false;
@@ -91,13 +95,14 @@ Java_com_kyant_taglib_TagLib_savePropertyMap(
 JNIEXPORT jboolean JNICALL
 Java_com_kyant_taglib_TagLib_savePictures(
         JNIEnv *env,
-        jobject /* this */,
+        jobject,
         jint fd,
         jobjectArray pictures
 ) {
     try {
         auto path = getRealPathFromFd(fd);
-        TagLibExt::FileRef f(path, false, false);
+        auto stream = std::make_unique<TagLib::FileStream>(fd, false);
+        TagLibExt::FileRef f(path, stream.get(), false);
 
         if (f.isNull()) {
             return false;
