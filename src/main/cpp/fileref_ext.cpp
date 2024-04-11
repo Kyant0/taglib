@@ -56,6 +56,7 @@
 #include "xmfile.h"
 #include "dsffile.h"
 #include "dsdifffile.h"
+#include <android/log.h>
 
 using namespace TagLib;
 
@@ -70,6 +71,7 @@ namespace TagLibExt
     if (fileName != nullptr) {
         path = *fileName;
     }
+    __android_log_print(ANDROID_LOG_DEBUG, "TagLib", "path: %s", path);
     const String s(path);
 
     String ext;
