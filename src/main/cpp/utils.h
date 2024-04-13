@@ -153,9 +153,9 @@ jobjectArray StringListToJniStringArray(JNIEnv *env, const TagLib::StringList &s
 jobject PropertyMapToJniHashMap(JNIEnv *env, const TagLib::PropertyMap &propertyMap) {
     jobject hashMap = env->NewObject(hashMapClass, hashMapInit, static_cast<jint>(propertyMap.size()));
 
-    for (const auto &it: propertyMap) {
-        const char *key = it.first.toCString(true);
-        const TagLib::StringList &valueList = it.second;
+    for (const auto &property: propertyMap) {
+        const char *key = property.first.toCString(true);
+        const TagLib::StringList &valueList = property.second;
 
         jobjectArray valueArray = StringListToJniStringArray(env, valueList);
 
@@ -174,7 +174,7 @@ TagLib::StringList JniStringArrayToStringList(JNIEnv *env, jobjectArray stringAr
     TagLib::StringList stringList;
 
     jsize arrayLength = env->GetArrayLength(stringArray);
-    for (jsize i = 0; i < arrayLength; ++i) {
+    for (int i = 0; i < arrayLength; ++i) {
         auto jStr = reinterpret_cast<jstring>(env->GetObjectArrayElement(stringArray, i));
         const char *cStr = env->GetStringUTFChars(jStr, nullptr);
         stringList.append(TagLib::String(cStr, TagLib::String::UTF8));
@@ -319,22 +319,19 @@ jobjectArray emptyPictureArray(JNIEnv *env) {
 }
 
 char *getRealPathFromFd(int fd) {
-    char path[32];
-    sprintf(path, "/proc/self/fd/%d", fd);
+    const std::string path = "/proc/self/fd/" + std::to_string(fd);
+    const char *pathStr = path.c_str();
 
-    // Dynamically allocate memory for link buffer
-    size_t size = 128; // Initial size
+    size_t size = 128;
     char *link = (char *) malloc(size);
 
     ssize_t bytesRead;
-    while ((bytesRead = readlink(path, link, size)) == static_cast<ssize_t>(size)) {
-        // Enlarge the buffer
+    while ((bytesRead = readlink(pathStr, link, size)) == static_cast<ssize_t>(size)) {
         size *= 2;
         char *temp = (char *) realloc(link, size);
         link = temp;
     }
 
-    // Null-terminate the string
     link[bytesRead] = '\0';
 
     return link;

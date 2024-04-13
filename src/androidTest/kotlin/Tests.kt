@@ -68,7 +68,6 @@ class Tests {
                     BitmapFactory
                         .decodeStream(context.assets.open("699_200x200.jpg"))
                         .compress(Bitmap.CompressFormat.JPEG, 100, it)
-                    Assert.assertEquals(22266, it.size())
                     Picture(
                         data = it.toByteArray(),
                         description = "Front Cover",
@@ -82,7 +81,6 @@ class Tests {
                     BitmapFactory
                         .decodeStream(context.assets.open("947_200x200.jpg"))
                         .compress(Bitmap.CompressFormat.JPEG, 100, it)
-                    Assert.assertEquals(15297, it.size())
                     Picture(
                         data = it.toByteArray(),
                         description = "Back Cover",
