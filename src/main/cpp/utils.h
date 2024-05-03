@@ -58,7 +58,7 @@ extern "C" JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *) {
     metadataClass = reinterpret_cast<jclass>(env->NewGlobalRef(_metadataClass));
     env->DeleteLocalRef(_metadataClass);
     metadataConstructor = env->GetMethodID(metadataClass, "<init>",
-                                           "(Lcom/kyant/taglib/AudioProperties;Ljava/util/HashMap;[Lcom/kyant/taglib/Picture;)V");
+                                           "(Ljava/util/HashMap;[Lcom/kyant/taglib/Picture;)V");
 
     jclass _audioPropertiesClass = env->FindClass("com/kyant/taglib/AudioProperties");
     audioPropertiesClass = reinterpret_cast<jclass>(env->NewGlobalRef(_audioPropertiesClass));
@@ -318,7 +318,7 @@ jobjectArray emptyPictureArray(JNIEnv *env) {
     return env->NewObjectArray(0, pictureClass, nullptr);
 }
 
-char *getRealPathFromFd(int fd) {
+char *getRealPathFromFd(const int fd) {
     const std::string path = "/proc/self/fd/" + std::to_string(fd);
     const char *pathStr = path.c_str();
 

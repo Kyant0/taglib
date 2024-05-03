@@ -3,12 +3,11 @@
 
 extern "C" {
 JNIEXPORT jobject JNICALL
-Java_com_kyant_taglib_TagLib_getMetadata(
+Java_com_kyant_taglib_TagLib_getAudioProperties(
         JNIEnv *env,
         jobject,
         jint fd,
-        jint read_style,
-        jboolean read_pictures
+        jint read_style
 ) {
     try {
         auto path = getRealPathFromFd(fd);
@@ -17,10 +16,36 @@ Java_com_kyant_taglib_TagLib_getMetadata(
         TagLibExt::FileRef f(path, stream.get(), true, style);
 
         if (f.isNull()) {
+            free(path);
             return nullptr;
         }
 
         jobject audioProperties = getAudioProperties(env, f);
+        free(path);
+        return audioProperties;
+    } catch (const std::exception &e) {
+        throwJavaException(env, e.what());
+        return nullptr;
+    }
+}
+
+JNIEXPORT jobject JNICALL
+Java_com_kyant_taglib_TagLib_getMetadata(
+        JNIEnv *env,
+        jobject,
+        jint fd,
+        jboolean read_pictures
+) {
+    try {
+        auto path = getRealPathFromFd(fd);
+        auto stream = std::make_unique<TagLib::FileStream>(fd, true);
+        TagLibExt::FileRef f(path, stream.get(), false);
+
+        if (f.isNull()) {
+            free(path);
+            return nullptr;
+        }
+
         jobject propertiesMap = getPropertyMap(env, f);
         jobjectArray pictures;
         if (read_pictures) {
@@ -31,7 +56,7 @@ Java_com_kyant_taglib_TagLib_getMetadata(
 
         jobject metadata = env->NewObject(
                 metadataClass, metadataConstructor,
-                audioProperties, propertiesMap, pictures
+                 propertiesMap, pictures
         );
         free(path);
         return metadata;
@@ -53,6 +78,7 @@ Java_com_kyant_taglib_TagLib_getPictures(
         TagLibExt::FileRef f(path, stream.get(), false);
 
         if (f.isNull()) {
+            free(path);
             return emptyPictureArray(env);
         }
 
@@ -78,6 +104,7 @@ Java_com_kyant_taglib_TagLib_savePropertyMap(
         TagLibExt::FileRef f(path, stream.get(), false);
 
         if (f.isNull()) {
+            free(path);
             return false;
         }
 
@@ -105,6 +132,7 @@ Java_com_kyant_taglib_TagLib_savePictures(
         TagLibExt::FileRef f(path, stream.get(), false);
 
         if (f.isNull()) {
+            free(path);
             return false;
         }
 

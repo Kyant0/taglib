@@ -4,24 +4,32 @@ package com.kyant.taglib
  * An object that provides access to the native TagLib library.
  */
 public object TagLib {
-    private external fun getMetadata(
+    private external fun getAudioProperties(
         fd: Int,
         readStyle: Int,
-        readPictures: Boolean,
-    ): Metadata?
+    ): AudioProperties?
+
+    /**
+     * Get audio properties from file descriptor.
+     *
+     * @param fd File descriptor
+     * @param readStyle Read style for audio properties to balance speed and accuracy
+     */
+    public fun getAudioProperties(
+        fd: Int,
+        readStyle: AudioPropertiesReadStyle = AudioPropertiesReadStyle.Average,
+    ): AudioProperties? = getAudioProperties(fd, readStyle.ordinal)
 
     /**
      * Get metadata from file descriptor.
      *
      * @param fd File descriptor
-     * @param readStyle Read style for audio properties to balance speed and accuracy
      * @param readPictures Whether to read pictures
      */
-    public fun getMetadata(
+    public external fun getMetadata(
         fd: Int,
-        readStyle: AudioPropertiesReadStyle = AudioPropertiesReadStyle.Average,
         readPictures: Boolean = true,
-    ): Metadata? = getMetadata(fd, readStyle.ordinal, readPictures)
+    ): Metadata?
 
     /**
      * Get pictures from file descriptor. There may be multiple pictures with different types.

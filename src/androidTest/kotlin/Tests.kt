@@ -24,10 +24,14 @@ class Tests {
     private fun read_and_write_m4a() {
         getFdFromAssets(context, "Sample_BeeMoved_48kHz16bit.m4a").use { fd ->
 
+            // Read audio properties
+
+            val audioProperties = TagLib.getAudioProperties(fd.dup().detachFd())!!
+            Assert.assertEquals(39936, audioProperties.length)
+
             // Read metadata
 
             val metadata = TagLib.getMetadata(fd = fd.dup().detachFd(), readPictures = true)!!
-            Assert.assertEquals(39936, metadata.audioProperties.length)
             Assert.assertEquals("Bee Moved", metadata.propertyMap["TITLE"]!!.single())
             Assert.assertEquals(58336, metadata.pictures.single().data.size)
 
