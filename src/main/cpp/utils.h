@@ -323,26 +323,18 @@ char *getRealPathFromFd(const int fd) {
     const char *pathStr = path.c_str();
 
     size_t size = 128;
-    char *link = (char *) malloc(size);
+    char *link = reinterpret_cast<char *>(malloc(size));
 
     ssize_t bytesRead;
     while ((bytesRead = readlink(pathStr, link, size)) == static_cast<ssize_t>(size)) {
         size *= 2;
-        char *temp = (char *) realloc(link, size);
+        char *temp = reinterpret_cast<char *>(realloc(link, size));
         link = temp;
     }
 
     link[bytesRead] = '\0';
 
     return link;
-}
-
-void throwJavaException(JNIEnv *env, const char *message) {
-    jclass exClass = env->FindClass("com/kyant/taglib/TagLibException");
-    if (exClass != nullptr) {
-        env->ThrowNew(exClass, message);
-    }
-    env->DeleteLocalRef(exClass);
 }
 
 #endif //TAGLIB_UTILS_H
