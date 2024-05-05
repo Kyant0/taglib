@@ -40,20 +40,16 @@
 #include "apefile.h"
 #include "asffile.h"
 #include "flacfile.h"
-#include "itfile.h"
-#include "modfile.h"
 #include "mp4file.h"
 #include "mpcfile.h"
 #include "mpegfile.h"
 #include "oggflacfile.h"
 #include "opusfile.h"
-#include "s3mfile.h"
 #include "speexfile.h"
 #include "trueaudiofile.h"
 #include "vorbisfile.h"
 #include "wavfile.h"
 #include "wavpackfile.h"
-#include "xmfile.h"
 #include "dsffile.h"
 #include "dsdifffile.h"
 
@@ -119,15 +115,6 @@ namespace TagLibExt {
             file = new RIFF::WAV::File(stream, readAudioProperties, audioPropertiesStyle);
         else if (ext == "APE")
             file = new APE::File(stream, readAudioProperties, audioPropertiesStyle);
-            // module, nst and wow are possible but uncommon extensions
-        else if (ext == "MOD" || ext == "MODULE" || ext == "NST" || ext == "WOW")
-            file = new Mod::File(stream, readAudioProperties, audioPropertiesStyle);
-        else if (ext == "S3M")
-            file = new S3M::File(stream, readAudioProperties, audioPropertiesStyle);
-        else if (ext == "IT")
-            file = new IT::File(stream, readAudioProperties, audioPropertiesStyle);
-        else if (ext == "XM")
-            file = new XM::File(stream, readAudioProperties, audioPropertiesStyle);
         else if (ext == "DSF")
             file = new DSF::File(stream, readAudioProperties, audioPropertiesStyle);
         else if (ext == "DFF" || ext == "DSDIFF")

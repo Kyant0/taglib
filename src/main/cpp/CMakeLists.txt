@@ -34,13 +34,8 @@ include_directories(
         taglib/taglib/riff
         taglib/taglib/riff/aiff
         taglib/taglib/riff/wav
-        taglib/taglib/mod
-        taglib/taglib/s3m
-        taglib/taglib/it
-        taglib/taglib/xm
         taglib/taglib/dsf
-        taglib/taglib/dsdiff
-)
+        taglib/taglib/dsdiff)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
         taglib.cpp
