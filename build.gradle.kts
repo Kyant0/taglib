@@ -10,8 +10,7 @@ version = libs.versions.lib.version.get()
 android {
     namespace = "com.kyant.taglib"
     compileSdk = libs.versions.android.compileSdk.get().toInt()
-    buildToolsVersion = "34.0.0"
-    ndkVersion = "27.0.11718014"
+    ndkVersion = libs.versions.android.ndkVersion.get()
 
     defaultConfig {
         minSdk = libs.versions.android.minSdk.get().toInt()
