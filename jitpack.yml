@@ -1,5 +1,4 @@
-jdk:
-  - openjdk21
-
 before_install:
   - yes | sdkmanager "cmake;3.30.5"
+  - sdk install java 21.0.2-open
+  - sdk use java 21.0.2-open
