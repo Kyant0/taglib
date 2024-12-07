@@ -13,6 +13,7 @@ before_install:
   # Setting up environment variables
   - export ANDROID_HOME=$PWD/android-sdk-linux
   - export PATH=$PATH:$PWD/android-sdk-linux/platform-tools/
+  - export PATH=$PATH:$PWD/android-sdk-linux/cmake/3.31.1/bin/
   - chmod +x ./gradlew
   - set +o pipefail
   - yes | android-sdk-linux/tools/bin/sdkmanager --licenses
