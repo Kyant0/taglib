@@ -2,7 +2,7 @@ before_install:
   # Installing Java 8 because Android SDK manager needs XML Binds which not exists in JDK 21
   - sdk install java 8.0.265-open
   - sdk use java 8.0.265-open
-  - wget --quiet https://dl.google.com/android/repository/commandlinetools-linux-12266719_latest.zip --output-document=android-sdk.zip
+  - wget --quiet -output-document=android-sdk.zip https://dl.google.com/android/repository/commandlinetools-linux-12266719_latest.zip
   - unzip -d android-sdk-linux android-sdk.zip
   # Installing the necessary Android SDK packages (accepting licenses, NDK, CMake)
   - echo y | android-sdk-linux/tools/bin/sdkmanager "platforms;android-35" >/dev/null
