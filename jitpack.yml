@@ -2,11 +2,21 @@ before_install:
   # Installing Java 8 because Android SDK manager needs XML Binds which not exists in JDK 21
   - sdk install java 8.0.432-open
   - sdk use java 8.0.432-open
+  - wget --quiet https://dl.google.com/android/repository/commandlinetools-linux-12266719_latest.zip --output=android-sdk.zip
+  - unzip -d android-sdk-linux android-sdk.zip
   # Installing the necessary Android SDK packages (accepting licenses, NDK, CMake)
-  - yes | sdkmanager --licenses
-  - yes | sdkmanager --update
-  - yes | sdkmanager --install "ndk;28.0.12674087"
-  - yes | sdkmanager "cmake;3.31.1"
+  - echo y | android-sdk-linux/tools/bin/sdkmanager "platforms;android-35" >/dev/null
+  - echo y | android-sdk-linux/tools/bin/sdkmanager "platform-tools" >/dev/null
+  - echo y | android-sdk-linux/tools/bin/sdkmanager "build-tools;35.0.0" >/dev/null
+  - echo y | android-sdk-linux/tools/bin/sdkmanager "ndk;28.0.12674087" >/dev/null
+  - echo y | android-sdk-linux/tools/bin/sdkmanager "cmake;3.31.1" >/dev/null
+  # Setting up environment variables
+  - export ANDROID_HOME=$PWD/android-sdk-linux
+  - export PATH=$PATH:$PWD/android-sdk-linux/platform-tools/
+  - chmod +x ./gradlew
+  - set +o pipefail
+  - yes | android-sdk-linux/tools/bin/sdkmanager --licenses
+  - set -o pipefail
   # Install JDK 21 and using it for the rest of the build
   - sdk install java 21.0.2-open
   - sdk use java 21.0.2-open
