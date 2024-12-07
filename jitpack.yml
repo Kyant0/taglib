@@ -17,6 +17,12 @@ before_install:
   # Setting up environment variables
   - export PATH=$PATH:$PWD/sdk/platform-tools/
   - export PATH=$PATH:$PWD/sdk/cmake/3.31.1/bin/
+  - echo $PATH
+  - ls $PWD/sdk
+  - ls $PWD/sdk/platform-tools
+  - ls $PWD/sdk/cmake
   # Install JDK 21 and using it for the rest of the build
   - sdk install java 21.0.2-open
   - sdk use java 21.0.2-open
+env:
+  ANDROID_SDK_ROOT: $PWD/sdk
