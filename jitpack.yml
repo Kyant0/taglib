@@ -1,2 +1,10 @@
 jdk:
   - openjdk21
+before_install:
+  # Installing Java 8 because Android SDK manager needs XML Binds which not exists in JDK 21
+  - sdk install java 8.0.412-open
+  - sdk use java 8.0.412-open
+  - yes | sdkmanager "cmake;3.31.1"
+  # Install JDK 21 and using it for the rest of the build
+  - sdk install java 21.0.5-open
+  - sdk use java 21.0.5-open
