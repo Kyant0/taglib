@@ -7,6 +7,7 @@ before_install:
   - export ANDROID_SDK_ROOT=$PWD/sdk
   - export PATH=$PATH:$PWD/sdk/
   - export PATH=$PATH:$PWD/sdk/cmdline-tools/bin/
+  - export SKIP_JDK_VERSION_CHECK=1
   # Installing the necessary Android SDK packages (accepting licenses, NDK, CMake)
   - yes | sdk/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
   - yes | sdk/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platforms;android-35" > /dev/null
