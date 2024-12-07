@@ -5,7 +5,6 @@ before_install:
   # Installing the necessary Android SDK packages (accepting licenses, NDK, CMake)
   - yes | sdkmanager --licenses
   - yes | sdkmanager --update
-  - yes | sdkmanager --uninstall "ndk-bundle"
   - yes | sdkmanager --install "ndk;28.0.12674087"
   - yes | sdkmanager "cmake;3.31.1"
   # Install JDK 21 and using it for the rest of the build
