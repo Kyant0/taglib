@@ -9,6 +9,7 @@ import org.junit.Assert
 import org.junit.Test
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.nio.charset.Charset
 
 class Tests {
     private val context: Context = InstrumentationRegistry.getInstrumentation().targetContext
@@ -19,6 +20,7 @@ class Tests {
         read_and_write_pictures_flac()
         read_flac_multiple_pictures()
         ensure_utf8()
+        bad_encoding()
     }
 
     private fun read_and_write_m4a() {
@@ -38,10 +40,9 @@ class Tests {
             // Save metadata
 
             val newTitle = "Bee Moved (Remix)"
-            val newPropertyMap =
-                metadata.propertyMap.apply {
-                    this["TITLE"] = arrayOf(newTitle)
-                }
+            val newPropertyMap = metadata.propertyMap.apply {
+                this["TITLE"] = arrayOf(newTitle)
+            }
             val saved = TagLib.savePropertyMap(fd.dup().detachFd(), newPropertyMap)
             Assert.assertTrue(saved)
 
@@ -67,31 +68,29 @@ class Tests {
 
             // Save new multiple pictures
 
-            val newPicture1 =
-                ByteArrayOutputStream().use {
-                    BitmapFactory
-                        .decodeStream(context.assets.open("699_200x200.jpg"))
-                        .compress(Bitmap.CompressFormat.JPEG, 100, it)
-                    Picture(
-                        data = it.toByteArray(),
-                        description = "Front Cover",
-                        pictureType = "Front Cover",
-                        mimeType = "image/jpeg",
-                    )
-                }
+            val newPicture1 = ByteArrayOutputStream().use {
+                BitmapFactory
+                    .decodeStream(context.assets.open("699_200x200.jpg"))
+                    .compress(Bitmap.CompressFormat.JPEG, 100, it)
+                Picture(
+                    data = it.toByteArray(),
+                    description = "Front Cover",
+                    pictureType = "Front Cover",
+                    mimeType = "image/jpeg",
+                )
+            }
 
-            val newPicture2 =
-                ByteArrayOutputStream().use {
-                    BitmapFactory
-                        .decodeStream(context.assets.open("947_200x200.jpg"))
-                        .compress(Bitmap.CompressFormat.JPEG, 100, it)
-                    Picture(
-                        data = it.toByteArray(),
-                        description = "Back Cover",
-                        pictureType = "Back Cover",
-                        mimeType = "image/jpeg",
-                    )
-                }
+            val newPicture2 = ByteArrayOutputStream().use {
+                BitmapFactory
+                    .decodeStream(context.assets.open("947_200x200.jpg"))
+                    .compress(Bitmap.CompressFormat.JPEG, 100, it)
+                Picture(
+                    data = it.toByteArray(),
+                    description = "Back Cover",
+                    pictureType = "Back Cover",
+                    mimeType = "image/jpeg",
+                )
+            }
 
             TagLib.savePictures(fd.dup().detachFd(), arrayOf(newPicture1, newPicture2))
             val newPictures = TagLib.getPictures(fd.dup().detachFd())
@@ -109,7 +108,6 @@ class Tests {
         }
     }
 
-    @Suppress("SpellCheckingInspection")
     private fun ensure_utf8() {
         getFdFromAssets(context, "bladeenc.mp3").use { fd ->
 
@@ -134,20 +132,24 @@ class Tests {
         }
     }
 
-    private fun getFdFromAssets(
-        context: Context,
-        fileName: String,
-    ): ParcelFileDescriptor {
+    private fun bad_encoding() {
+        getFdFromAssets(context, "Honor.mp3").use { fd ->
+            val metadata = TagLib.getMetadata(fd.dup().detachFd())!!
+            Assert.assertEquals(
+                "荣耀".toByteArray(Charset.forName("GB2312")).toString(Charsets.ISO_8859_1),
+                metadata.propertyMap["TITLE"]!!.single()
+            )
+        }
+    }
+
+    private fun getFdFromAssets(context: Context, fileName: String): ParcelFileDescriptor {
         val file = getFileFromAssets(context, fileName)
         return ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_WRITE)
     }
 
-    private fun getFileFromAssets(
-        context: Context,
-        fileName: String,
-    ): File {
-        return File(context.cacheDir, fileName).also {
-            it.outputStream().use { cache ->
+    private fun getFileFromAssets(context: Context, fileName: String): File {
+        return File(context.cacheDir, fileName).apply {
+            outputStream().use { cache ->
                 context.assets.open(fileName).use { inputStream ->
                     inputStream.copyTo(cache)
                 }
