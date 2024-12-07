@@ -2,6 +2,11 @@ before_install:
   # Installing Java 8 because Android SDK manager needs XML Binds which not exists in JDK 21
   - sdk install java 8.0.432-open
   - sdk use java 8.0.432-open
+  # Installing the necessary Android SDK packages (accepting licenses, NDK, CMake)
+  - yes | sdkmanager --licenses
+  - yes | sdkmanager --update
+  - yes | sdkmanager --uninstall "ndk-bundle"
+  - yes | sdkmanager --install "ndk;28.0.12674087"
   - yes | sdkmanager "cmake;3.31.1"
   # Install JDK 21 and using it for the rest of the build
   - sdk install java 21.0.2-open
