@@ -1,4 +1,8 @@
 before_install:
+  - apt-get update --allow-releaseinfo-change --fix-missing
+  - apt-get upgrade -y
+  - apt-get install -y --no-install-recommends ninja-build build-essential openjdk-21-jdk-headless make
+  - apt-get clean
   # Installing Java 8 because Android SDK manager needs XML Binds which not exists in JDK 21
   - sdk install java 21.0.2-open
   - sdk use java 21.0.2-open
@@ -9,7 +13,7 @@ before_install:
   - export PATH=$PATH:$PWD/sdk/cmdline-tools/bin/
   - export SKIP_JDK_VERSION_CHECK=1
   # Installing the necessary Android SDK packages (accepting licenses, NDK, CMake)
-  - yes | sdk/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
+  - yes | sdk/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses > /dev/null
   - yes | sdk/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platforms;android-35" > /dev/null
   - yes | sdk/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platform-tools" > /dev/null
   - yes | sdk/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "build-tools;35.0.0" > /dev/null
@@ -19,8 +23,5 @@ before_install:
   - export PATH=$PATH:$PWD/sdk/platform-tools/
   - export PATH=$PATH:$PWD/sdk/cmake/3.31.1/bin/
   - echo $PATH
-  - ls $PWD/sdk
-  - ls $PWD/sdk/platform-tools
-  - ls $PWD/sdk/cmake
 env:
   ANDROID_SDK_ROOT: $PWD/sdk
