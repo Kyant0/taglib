@@ -5,14 +5,17 @@ extern "C" {
 JNIEXPORT jobject JNICALL
 Java_com_kyant_taglib_TagLib_getAudioProperties(
         JNIEnv *env,
-        jobject,
+        jclass,
         jint fd,
         jint read_style
 ) {
     char *path = getRealPathFromFd(fd);
-    auto stream = std::make_unique<TagLib::FileStream>(fd, true);
-    auto style = static_cast<TagLib::AudioProperties::ReadStyle>(read_style);
-    TagLibExt::FileRef f(path, stream.get(), true, style);
+    if (path == nullptr) {
+        return nullptr;
+    }
+    const auto stream = std::make_unique<TagLib::FileStream>(fd, true);
+    const auto style = static_cast<TagLib::AudioProperties::ReadStyle>(read_style);
+    const TagLibExt::FileRef f(path, stream.get(), true, style);
 
     if (f.isNull()) {
         free(path);
@@ -27,20 +30,23 @@ Java_com_kyant_taglib_TagLib_getAudioProperties(
 JNIEXPORT jobject JNICALL
 Java_com_kyant_taglib_TagLib_getMetadata(
         JNIEnv *env,
-        jobject,
+        jclass,
         jint fd,
         jboolean read_pictures
 ) {
     char *path = getRealPathFromFd(fd);
-    auto stream = std::make_unique<TagLib::FileStream>(fd, true);
-    TagLibExt::FileRef f(path, stream.get(), false);
+    if (path == nullptr) {
+        return nullptr;
+    }
+    const auto stream = std::make_unique<TagLib::FileStream>(fd, true);
+    const TagLibExt::FileRef f(path, stream.get(), false);
 
     if (f.isNull()) {
         free(path);
         return nullptr;
     }
 
-    jobject propertiesMap = getPropertyMap(env, f);
+    const jobject propertiesMap = getPropertyMap(env, f);
     jobjectArray pictures;
     if (read_pictures) {
         pictures = getPictures(env, f);
@@ -59,12 +65,15 @@ Java_com_kyant_taglib_TagLib_getMetadata(
 JNIEXPORT jobjectArray JNICALL
 Java_com_kyant_taglib_TagLib_getPictures(
         JNIEnv *env,
-        jobject,
+        jclass,
         jint fd
 ) {
     char *path = getRealPathFromFd(fd);
-    auto stream = std::make_unique<TagLib::FileStream>(fd, true);
-    TagLibExt::FileRef f(path, stream.get(), false);
+    if (path == nullptr) {
+        return nullptr;
+    }
+    const auto stream = std::make_unique<TagLib::FileStream>(fd, true);
+    const TagLibExt::FileRef f(path, stream.get(), false);
 
     if (f.isNull()) {
         free(path);
@@ -79,12 +88,15 @@ Java_com_kyant_taglib_TagLib_getPictures(
 JNIEXPORT jboolean JNICALL
 Java_com_kyant_taglib_TagLib_savePropertyMap(
         JNIEnv *env,
-        jobject,
+        jclass,
         jint fd,
         jobject property_map
 ) {
     char *path = getRealPathFromFd(fd);
-    auto stream = std::make_unique<TagLib::FileStream>(fd, false);
+    if (path == nullptr) {
+        return false;
+    }
+    const auto stream = std::make_unique<TagLib::FileStream>(fd, false);
     TagLibExt::FileRef f(path, stream.get(), false);
 
     if (f.isNull()) {
@@ -92,9 +104,9 @@ Java_com_kyant_taglib_TagLib_savePropertyMap(
         return false;
     }
 
-    auto propertyMap = JniHashMapToPropertyMap(env, property_map);
+    const PropertyMap propertyMap = JniHashMapToPropertyMap(env, property_map);
     f.setProperties(propertyMap);
-    bool success = f.save();
+    const bool success = f.save();
     free(path);
     return success;
 }
@@ -102,12 +114,15 @@ Java_com_kyant_taglib_TagLib_savePropertyMap(
 JNIEXPORT jboolean JNICALL
 Java_com_kyant_taglib_TagLib_savePictures(
         JNIEnv *env,
-        jobject,
+        jclass,
         jint fd,
         jobjectArray pictures
 ) {
     char *path = getRealPathFromFd(fd);
-    auto stream = std::make_unique<TagLib::FileStream>(fd, false);
+    if (path == nullptr) {
+        return false;
+    }
+    const auto stream = std::make_unique<TagLib::FileStream>(fd, false);
     TagLibExt::FileRef f(path, stream.get(), false);
 
     if (f.isNull()) {
@@ -117,7 +132,7 @@ Java_com_kyant_taglib_TagLib_savePictures(
 
     auto pictureList = JniPictureArrayToPictureList(env, pictures);
     f.setComplexProperties("PICTURE", pictureList);
-    bool success = f.save();
+    const bool success = f.save();
     free(path);
     return success;
 }

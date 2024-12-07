@@ -138,7 +138,8 @@ extern "C" JNIEXPORT void JNI_OnUnload(JavaVM *vm, void *) {
 
 // Helper function to convert C++ StringList to JNI String array
 jobjectArray StringListToJniStringArray(JNIEnv *env, const TagLib::StringList &stringList) {
-    jobjectArray array = env->NewObjectArray(static_cast<jsize>(stringList.size()), stringClass, nullptr);
+    jobjectArray array = env->NewObjectArray(static_cast<jsize>(stringList.size()),
+                                             stringClass, nullptr);
     int i = 0;
     for (const auto &str: stringList) {
         jstring jStr = env->NewStringUTF(str.toCString(true));
@@ -173,7 +174,7 @@ jobject PropertyMapToJniHashMap(JNIEnv *env, const TagLib::PropertyMap &property
 TagLib::StringList JniStringArrayToStringList(JNIEnv *env, jobjectArray stringArray) {
     TagLib::StringList stringList;
 
-    jsize arrayLength = env->GetArrayLength(stringArray);
+    const jsize arrayLength = env->GetArrayLength(stringArray);
     for (int i = 0; i < arrayLength; ++i) {
         auto jStr = reinterpret_cast<jstring>(env->GetObjectArrayElement(stringArray, i));
         const char *cStr = env->GetStringUTFChars(jStr, nullptr);
@@ -198,7 +199,7 @@ TagLib::PropertyMap JniHashMapToPropertyMap(JNIEnv *env, jobject hashMap) {
         jobject value = env->CallObjectMethod(entry, getValueMethod);
 
         const char *keyStr = env->GetStringUTFChars(reinterpret_cast<jstring>(key), nullptr);
-        const auto valueList = JniStringArrayToStringList(env, reinterpret_cast<jobjectArray>(value));
+        const StringList valueList = JniStringArrayToStringList(env, reinterpret_cast<jobjectArray>(value));
 
         propertyMap[TagLib::String(keyStr, TagLib::String::UTF8)] = valueList;
 
@@ -216,20 +217,21 @@ jobjectArray PictureListToJniPictureArray(
         JNIEnv *env,
         const TagLib::List<TagLib::Map<TagLib::String, TagLib::Variant>> &pictureList
 ) {
-    jobjectArray array = env->NewObjectArray(static_cast<jsize>(pictureList.size()), pictureClass, nullptr);
+    jobjectArray array = env->NewObjectArray(static_cast<jsize>(pictureList.size()),
+                                             pictureClass, nullptr);
     int i = 0;
     for (const auto &picture: pictureList) {
-        auto pictureData = picture["data"].toByteVector();
+        const ByteVector pictureData = picture["data"].toByteVector();
         if (pictureData.isEmpty()) {
             continue;
         }
 
         jbyteArray bytes = env->NewByteArray(static_cast<jint>(pictureData.size()));
-        auto description = picture["description"].toString();
+        const String description = picture["description"].toString();
         jstring jDescription = env->NewStringUTF(description.toCString(true));
-        auto pictureType = picture["pictureType"].toString();
+        const String pictureType = picture["pictureType"].toString();
         jstring jPictureType = env->NewStringUTF(pictureType.toCString(true));
-        auto mimeType = picture["mimeType"].toString();
+        const String mimeType = picture["mimeType"].toString();
         jstring jMimeType = env->NewStringUTF(mimeType.toCString(true));
 
         env->SetByteArrayRegion(
@@ -257,16 +259,20 @@ TagLib::List<TagLib::Map<TagLib::String, TagLib::Variant>>
 JniPictureArrayToPictureList(JNIEnv *env, jobjectArray pictures) {
     TagLib::List<TagLib::Map<TagLib::String, TagLib::Variant>> pictureList;
 
-    int pictureCount = env->GetArrayLength(pictures);
+    const jsize pictureCount = env->GetArrayLength(pictures);
     for (int i = 0; i < pictureCount; i++) {
-        auto pictureObject = env->GetObjectArrayElement(pictures, i);
-        auto bytes = reinterpret_cast<jbyteArray>(env->CallObjectMethod(pictureObject, pictureGetData));
-        auto description = reinterpret_cast<jstring>(env->CallObjectMethod(pictureObject, pictureGetDescription));
-        auto pictureType = reinterpret_cast<jstring>(env->CallObjectMethod(pictureObject, pictureGetPictureType));
-        auto mimeType = reinterpret_cast<jstring>(env->CallObjectMethod(pictureObject, pictureGetMimeType));
+        jobject pictureObject = env->GetObjectArrayElement(pictures, i);
+        const auto bytes = reinterpret_cast<jbyteArray>(env->CallObjectMethod(pictureObject,
+                                                                              pictureGetData));
+        const auto description = reinterpret_cast<jstring>(env->CallObjectMethod(pictureObject,
+                                                                                 pictureGetDescription));
+        const auto pictureType = reinterpret_cast<jstring>(env->CallObjectMethod(pictureObject,
+                                                                                 pictureGetPictureType));
+        const auto mimeType = reinterpret_cast<jstring>(env->CallObjectMethod(pictureObject,
+                                                                              pictureGetMimeType));
 
-        auto pictureData = env->GetByteArrayElements(bytes, nullptr);
-        auto pictureDataSize = env->GetArrayLength(bytes);
+        jbyte *pictureData = env->GetByteArrayElements(bytes, nullptr);
+        const jsize pictureDataSize = env->GetArrayLength(bytes);
         TagLib::ByteVector pictureDataVector(
                 reinterpret_cast<const char *>(pictureData),
                 static_cast<uint>(pictureDataSize)
@@ -285,33 +291,25 @@ JniPictureArrayToPictureList(JNIEnv *env, jobjectArray pictures) {
 }
 
 jobject getAudioProperties(JNIEnv *env, const TagLibExt::FileRef &f) {
-    auto audioProperties = f.audioProperties();
-    jobject audioPropertiesObject;
+    const AudioProperties *audioProperties = f.audioProperties();
     if (audioProperties) {
-        jint duration = static_cast<jint>(audioProperties->lengthInMilliseconds());
-        jint bitrate = static_cast<jint>(audioProperties->bitrate());
-        jint sampleRate = static_cast<jint>(audioProperties->sampleRate());
-        jint channels = static_cast<jint>(audioProperties->channels());
-        audioPropertiesObject = env->NewObject(
+        const jint duration = static_cast<jint>(audioProperties->lengthInMilliseconds());
+        const jint bitrate = static_cast<jint>(audioProperties->bitrate());
+        const jint sampleRate = static_cast<jint>(audioProperties->sampleRate());
+        const jint channels = static_cast<jint>(audioProperties->channels());
+        return env->NewObject(
                 audioPropertiesClass, audioPropertiesConstructor,
                 duration, bitrate, sampleRate, channels);
-    } else {
-        audioPropertiesObject = env->NewObject(
-                audioPropertiesClass, audioPropertiesConstructor,
-                0, 0, 0, 0);
     }
-    return audioPropertiesObject;
+    return env->NewObject(audioPropertiesClass, audioPropertiesConstructor, 0, 0, 0, 0);
 }
 
 jobject getPropertyMap(JNIEnv *env, const TagLibExt::FileRef &f) {
-    auto properties = f.properties();
-    return PropertyMapToJniHashMap(env, properties);
+    return PropertyMapToJniHashMap(env, f.properties());
 }
 
 jobjectArray getPictures(JNIEnv *env, const TagLibExt::FileRef &f) {
-    auto pictures = f.complexProperties("PICTURE");
-    jobjectArray pictureArray = PictureListToJniPictureArray(env, pictures);
-    return pictureArray;
+    return PictureListToJniPictureArray(env, f.complexProperties("PICTURE"));
 }
 
 jobjectArray emptyPictureArray(JNIEnv *env) {
@@ -319,16 +317,22 @@ jobjectArray emptyPictureArray(JNIEnv *env) {
 }
 
 char *getRealPathFromFd(const int fd) {
-    const std::string path = "/proc/self/fd/" + std::to_string(fd);
-    const char *pathStr = path.c_str();
+    char path[22];
+    if (snprintf(path, sizeof(path), "/proc/self/fd/%d", fd) < 0) {
+        return nullptr;
+    }
 
     size_t size = 128;
     char *link = reinterpret_cast<char *>(malloc(size));
 
     ssize_t bytesRead;
-    while ((bytesRead = readlink(pathStr, link, size)) == static_cast<ssize_t>(size)) {
+    while ((bytesRead = readlink(path, link, size)) == static_cast<ssize_t>(size)) {
         size *= 2;
         char *temp = reinterpret_cast<char *>(realloc(link, size));
+        if (temp == nullptr) {
+            free(link);
+            return nullptr;
+        }
         link = temp;
     }
 

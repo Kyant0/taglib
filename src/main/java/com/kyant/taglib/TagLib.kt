@@ -4,6 +4,7 @@ package com.kyant.taglib
  * An object that provides access to the native TagLib library.
  */
 public object TagLib {
+    @JvmStatic
     private external fun getAudioProperties(
         fd: Int,
         readStyle: Int,
@@ -15,6 +16,7 @@ public object TagLib {
      * @param fd File descriptor
      * @param readStyle Read style for audio properties to balance speed and accuracy
      */
+    @JvmStatic
     public fun getAudioProperties(
         fd: Int,
         readStyle: AudioPropertiesReadStyle = AudioPropertiesReadStyle.Average,
@@ -26,6 +28,7 @@ public object TagLib {
      * @param fd File descriptor
      * @param readPictures Whether to read pictures
      */
+    @JvmStatic
     public external fun getMetadata(
         fd: Int,
         readPictures: Boolean = true,
@@ -34,11 +37,13 @@ public object TagLib {
     /**
      * Get pictures from file descriptor. There may be multiple pictures with different types.
      */
+    @JvmStatic
     public external fun getPictures(fd: Int): Array<Picture>
 
     /**
      * Get front cover from file descriptor.
      */
+    @JvmStatic
     public fun getFrontCover(fd: Int): Picture? {
         val pictures = getPictures(fd)
         return pictures.find { picture -> picture.pictureType == "Front Cover" }
@@ -53,6 +58,7 @@ public object TagLib {
      *
      * @return Whether the operation was successful
      */
+    @JvmStatic
     public external fun savePropertyMap(
         fd: Int,
         propertyMap: PropertyMap,
@@ -66,6 +72,7 @@ public object TagLib {
      *
      * @return Whether the operation was successful
      */
+    @JvmStatic
     public external fun savePictures(
         fd: Int,
         pictures: Array<Picture>,
