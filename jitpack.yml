@@ -12,6 +12,7 @@ before_install:
   - yes | sdk/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
   - yes | sdk/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "ndk;28.0.12674087" >/dev/null
   - yes | sdk/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT "cmake;3.31.1" >/dev/null
+  - yes | sdk/cmdline-tools/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
   # Setting up environment variables
   - export ANDROID_HOME=$PWD/sdk
   - export PATH=$PATH:$PWD/sdk/platform-tools/
