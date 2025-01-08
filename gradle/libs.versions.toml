@@ -1,10 +1,10 @@
 [versions]
-agp = "8.9.0-alpha04"
+agp = "8.7.3"
 android-minSdk = "23"
 android-compileSdk = "35"
 android-buildToolsVersion = "35.0.0"
 android-ndkVersion = "28.0.12674087"
-lib-version = "1.0.0-alpha26"
+lib-version = "1.0.0"
 
 kotlin = "2.1.0"
 rules = "1.6.1"

@@ -6,6 +6,9 @@ An Android library which can read and write tags of audio files, using [TagLib](
 
 [![JitPack Release](https://jitpack.io/v/Kyant0/taglib.svg)](https://jitpack.io/#Kyant0/taglib)
 
+JitPack builds are broken with the latest CMake version.
+Please download the [aar](https://github.com/Kyant0/taglib/releases) manually but not use maven.
+
 ```kotlin
 // build.gradle.kts
 allprojects {
