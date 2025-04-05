@@ -6,6 +6,24 @@
 #include "fileref_ext.h"
 #include "tpropertymap.h"
 
+#include <aifffile.h>
+#include <apefile.h>
+#include <asffile.h>
+#include <dsdifffile.h>
+#include <dsffile.h>
+#include <flacfile.h>
+#include <mp4file.h>
+#include <mpcfile.h>
+#include <mpegfile.h>
+#include <mod/modfile.h>
+#include <opusfile.h>
+#include <rifffile.h>
+#include <speexfile.h>
+#include <trueaudiofile.h>
+#include <vorbisfile.h>
+#include <wavfile.h>
+#include <wavpackfile.h>
+
 jclass stringClass = nullptr;
 
 jclass hashMapClass = nullptr;
@@ -63,7 +81,7 @@ extern "C" JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *) {
     jclass _audioPropertiesClass = env->FindClass("com/kyant/taglib/AudioProperties");
     audioPropertiesClass = reinterpret_cast<jclass>(env->NewGlobalRef(_audioPropertiesClass));
     env->DeleteLocalRef(_audioPropertiesClass);
-    audioPropertiesConstructor = env->GetMethodID(audioPropertiesClass, "<init>", "(IIII)V");
+    audioPropertiesConstructor = env->GetMethodID(audioPropertiesClass, "<init>", "(IIIILjava/lang/String;)V");
 
     jclass _pictureClass = env->FindClass("com/kyant/taglib/Picture");
     pictureClass = reinterpret_cast<jclass>(env->NewGlobalRef(_pictureClass));
@@ -297,11 +315,98 @@ jobject getAudioProperties(JNIEnv *env, const TagLibExt::FileRef &f) {
         const jint bitrate = static_cast<jint>(audioProperties->bitrate());
         const jint sampleRate = static_cast<jint>(audioProperties->sampleRate());
         const jint channels = static_cast<jint>(audioProperties->channels());
+        jstring codec;
+        
+        // common formats
+        if (dynamic_cast<TagLib::MPEG::File *>(f.file())) {
+            codec = env->NewStringUTF("mp3");
+        } else if (dynamic_cast<TagLib::Ogg::Opus::File *>(f.file())) {
+            codec = env->NewStringUTF("opus");
+        } else if (dynamic_cast<TagLib::RIFF::WAV::File *>(f.file())) {
+            codec = env->NewStringUTF("wav");
+        } else if (dynamic_cast<TagLib::FLAC::File *>(f.file())) {
+            codec = env->NewStringUTF("flac");
+        } else {
+            auto *mp4 = dynamic_cast<TagLib::MP4::File *>(f.file());
+            if (mp4) {
+                auto codecEnum = mp4->audioProperties()->codec();
+                const char* codecStr;
+
+                switch (codecEnum) {
+                    case TagLib::MP4::Properties::AAC:
+                        codecStr = "aac";
+                        break;
+                    case TagLib::MP4::Properties::ALAC:
+                        codecStr = "alac";
+                        break;
+                    case TagLib::MP4::Properties::Unknown:
+                    default:
+                        codecStr = "Unknown";
+                        break;
+                }
+
+                codec = env->NewStringUTF(codecStr);
+            } else if (dynamic_cast<TagLib::Ogg::Vorbis::File *>(f.file())) {
+                codec = env->NewStringUTF("vorbis");
+           // uncommon formats
+            } else if (dynamic_cast<TagLib::APE::File *>(f.file())) {
+                codec = env->NewStringUTF("ape");
+            } else {
+                ASF::File *asf = dynamic_cast<TagLib::ASF::File *>(f.file());
+                if (asf) {
+                    auto codecEnum = asf->audioProperties()->codec();
+                    const char* codecStr;
+
+                    switch (codecEnum) {
+                        case TagLib::ASF::Properties::WMA1:
+                            codecStr = "wma1";
+                            break;
+                        case TagLib::ASF::Properties::WMA2:
+                            codecStr = "wma2";
+                            break;
+                        case TagLib::ASF::Properties::WMA9Pro:
+                            codecStr = "wm9pro";
+                            break;
+                        case TagLib::ASF::Properties::WMA9Lossless:
+                            codecStr = "wma9lossless";
+                            break;
+                        case TagLib::ASF::Properties::Unknown:
+                        default:
+                            codecStr = "Unknown";
+                            break;
+                    }
+
+                    codec = env->NewStringUTF(codecStr);
+                } else if (dynamic_cast<TagLib::DSDIFF::File *>(f.file())) {
+                    codec = env->NewStringUTF("dsdiff");
+                } else if (dynamic_cast<TagLib::DSF::File *>(f.file())) {
+                    codec = env->NewStringUTF("dsf");
+                } else if (dynamic_cast<TagLib::MPC::File *>(f.file())) {
+                    codec = env->NewStringUTF("mpc");
+                } else if (dynamic_cast<TagLib::MPEG::File *>(f.file())) {
+                    codec = env->NewStringUTF("mpeg");
+                } else if (dynamic_cast<TagLib::Mod::File *>(f.file())) {
+                    codec = env->NewStringUTF("mod");
+                } else if (dynamic_cast<TagLib::Ogg::Speex::File *>(f.file())) {
+                    codec = env->NewStringUTF("speex");
+                } else if (dynamic_cast<TagLib::RIFF::AIFF::File *>(f.file())) {
+                    codec = env->NewStringUTF("riff");
+                } else if (dynamic_cast<TagLib::TrueAudio::File *>(f.file())) {
+                    codec = env->NewStringUTF("trueaudio");
+                } else if (dynamic_cast<TagLib::WavPack::File *>(f.file())) {
+                    codec = env->NewStringUTF("wavpack");
+                } else {
+                    codec = env->NewStringUTF("Unknown");
+                }
+            }
+        }
+
         return env->NewObject(
                 audioPropertiesClass, audioPropertiesConstructor,
-                duration, bitrate, sampleRate, channels);
+                duration, bitrate, sampleRate, channels, codec);
     }
-    return env->NewObject(audioPropertiesClass, audioPropertiesConstructor, 0, 0, 0, 0);
+    jstring codecUnknown = env->NewStringUTF("Unknown");
+    return env->NewObject(audioPropertiesClass, audioPropertiesConstructor, 0, 0, 0, 0, codecUnknown);
 }
 
 jobject getPropertyMap(JNIEnv *env, const TagLibExt::FileRef &f) {
