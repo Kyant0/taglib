@@ -46,7 +46,7 @@ Java_com_kyant_taglib_TagLib_getMetadata(
         return nullptr;
     }
 
-    const jobject propertiesMap = getPropertyMap(env, f);
+    jobject propertiesMap = getPropertyMap(env, f);
     jobjectArray pictures;
     if (read_pictures) {
         pictures = getPictures(env, f);
@@ -60,6 +60,48 @@ Java_com_kyant_taglib_TagLib_getMetadata(
     );
     free(path);
     return metadata;
+}
+
+JNIEXPORT jobjectArray JNICALL
+Java_com_kyant_taglib_TagLib_getMetadataPropertyValues(
+        JNIEnv *env,
+        jclass,
+        jint fd,
+        jstring property_name
+) {
+    const char *propertyName = env->GetStringUTFChars(property_name, nullptr);
+    if (propertyName == nullptr) {
+        return nullptr;
+    }
+
+    char *path = getRealPathFromFd(fd);
+    if (path == nullptr) {
+        env->ReleaseStringUTFChars(property_name, propertyName);
+        return nullptr;
+    }
+    const auto stream = std::make_unique<TagLib::FileStream>(fd, true);
+    const TagLibExt::FileRef f(path, stream.get(), false);
+
+    if (f.isNull()) {
+        free(path);
+        return nullptr;
+    }
+
+    const auto propertyMap = f.properties();
+    const auto valueList = propertyMap.find(TagLib::String(propertyName))->second;
+    jobjectArray result = env->NewObjectArray(static_cast<jsize>(valueList.size()),
+                                              stringClass, nullptr);
+    int i = 0;
+    for (const auto &value: valueList) {
+        jstring jValue = env->NewStringUTF(value.toCString(true));
+        env->SetObjectArrayElement(result, i, jValue);
+        env->DeleteLocalRef(jValue);
+        i++;
+    }
+
+    env->ReleaseStringUTFChars(property_name, propertyName);
+    free(path);
+    return result;
 }
 
 JNIEXPORT jobjectArray JNICALL

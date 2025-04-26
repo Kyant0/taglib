@@ -41,12 +41,9 @@
 #include "asffile.h"
 #include "flacfile.h"
 #include "mp4file.h"
-#include "mpcfile.h"
 #include "mpegfile.h"
 #include "oggflacfile.h"
 #include "opusfile.h"
-#include "speexfile.h"
-#include "trueaudiofile.h"
 #include "vorbisfile.h"
 #include "wavfile.h"
 #include "wavpackfile.h"
@@ -94,16 +91,10 @@ namespace TagLibExt {
             }
         } else if (ext == "FLAC")
             file = new FLAC::File(stream, readAudioProperties, audioPropertiesStyle);
-        else if (ext == "MPC")
-            file = new MPC::File(stream, readAudioProperties, audioPropertiesStyle);
         else if (ext == "WV")
             file = new WavPack::File(stream, readAudioProperties, audioPropertiesStyle);
-        else if (ext == "SPX")
-            file = new Ogg::Speex::File(stream, readAudioProperties, audioPropertiesStyle);
         else if (ext == "OPUS")
             file = new Ogg::Opus::File(stream, readAudioProperties, audioPropertiesStyle);
-        else if (ext == "TTA")
-            file = new TrueAudio::File(stream, readAudioProperties, audioPropertiesStyle);
         else if (ext == "M4A" || ext == "M4R" || ext == "M4B" || ext == "M4P" || ext == "MP4" || ext == "3G2" ||
                  ext == "M4V")
             file = new MP4::File(stream, readAudioProperties, audioPropertiesStyle);
@@ -145,16 +136,10 @@ namespace TagLibExt {
             file = new Ogg::FLAC::File(stream, readAudioProperties, audioPropertiesStyle);
         else if (FLAC::File::isSupported(stream))
             file = new FLAC::File(stream, readAudioProperties, audioPropertiesStyle);
-        else if (MPC::File::isSupported(stream))
-            file = new MPC::File(stream, readAudioProperties, audioPropertiesStyle);
         else if (WavPack::File::isSupported(stream))
             file = new WavPack::File(stream, readAudioProperties, audioPropertiesStyle);
-        else if (Ogg::Speex::File::isSupported(stream))
-            file = new Ogg::Speex::File(stream, readAudioProperties, audioPropertiesStyle);
         else if (Ogg::Opus::File::isSupported(stream))
             file = new Ogg::Opus::File(stream, readAudioProperties, audioPropertiesStyle);
-        else if (TrueAudio::File::isSupported(stream))
-            file = new TrueAudio::File(stream, readAudioProperties, audioPropertiesStyle);
         else if (MP4::File::isSupported(stream))
             file = new MP4::File(stream, readAudioProperties, audioPropertiesStyle);
         else if (ASF::File::isSupported(stream))

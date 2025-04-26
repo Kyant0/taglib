@@ -20,17 +20,14 @@ include_directories(
         taglib/taglib/ogg
         taglib/taglib/ogg/flac
         taglib/taglib/flac
-        taglib/taglib/mpc
         taglib/taglib/mp4
         taglib/taglib/ogg/vorbis
-        taglib/taglib/ogg/speex
         taglib/taglib/ogg/opus
         taglib/taglib/mpeg/id3v2
         taglib/taglib/mpeg/id3v2/frames
         taglib/taglib/mpeg/id3v1
         taglib/taglib/ape
         taglib/taglib/wavpack
-        taglib/taglib/trueaudio
         taglib/taglib/riff
         taglib/taglib/riff/aiff
         taglib/taglib/riff/wav

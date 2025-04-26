@@ -35,6 +35,18 @@ public object TagLib {
     ): Metadata?
 
     /**
+     * Get metadata property values from file descriptor.
+     *
+     * @param fd File descriptor
+     * @param propertyName Property name
+     */
+    @JvmStatic
+    public external fun getMetadataPropertyValues(
+        fd: Int,
+        propertyName: String,
+    ): Array<String>?
+
+    /**
      * Get pictures from file descriptor. There may be multiple pictures with different types.
      */
     @JvmStatic

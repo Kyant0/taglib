@@ -37,6 +37,11 @@ class Tests {
             Assert.assertEquals("Bee Moved", metadata.propertyMap["TITLE"]!!.single())
             Assert.assertEquals(58336, metadata.pictures.single().data.size)
 
+            // Read single metadata
+
+            val artists = TagLib.getMetadataPropertyValues(fd.dup().detachFd(), "ARTIST")!!
+            Assert.assertEquals("Blue Monday FM", artists.single())
+
             // Save metadata
 
             val newTitle = "Bee Moved (Remix)"
@@ -115,6 +120,9 @@ class Tests {
 
             val metadata = TagLib.getMetadata(fd.dup().detachFd())!!
             Assert.assertEquals("Test", metadata.propertyMap["TITLE"]!!.single())
+
+            val pictures = TagLib.getPictures(fd.dup().detachFd())
+            Assert.assertEquals(0, pictures.size)
 
             // Save metadata
 
