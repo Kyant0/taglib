@@ -1,12 +1,6 @@
 [versions]
-agp = "8.9.2"
-android-minSdk = "23"
-android-compileSdk = "36"
-android-buildToolsVersion = "36.0.0"
-android-ndkVersion = "29.0.13113456"
-lib-version = "1.0.2"
-
-kotlin = "2.1.20"
+agp = "8.11.0"
+kotlin = "2.2.0"
 rules = "1.6.1"
 runner = "1.6.2"
 

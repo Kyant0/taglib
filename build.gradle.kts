@@ -1,20 +1,19 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    `maven-publish`
 }
-
-group = "com.kyant"
-version = libs.versions.lib.version.get()
 
 android {
     namespace = "com.kyant.taglib"
-    compileSdk = libs.versions.android.compileSdk.get().toInt()
-    buildToolsVersion = libs.versions.android.buildToolsVersion.get()
-    ndkVersion = libs.versions.android.ndkVersion.get()
+    compileSdk = 36
+    buildToolsVersion = "36.0.0"
+    ndkVersion = "29.0.13599879"
 
     defaultConfig {
-        minSdk = libs.versions.android.minSdk.get().toInt()
+        minSdk = 23
         consumerProguardFiles("consumer-rules.pro")
         ndk {
             abiFilters += arrayOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
@@ -32,15 +31,19 @@ android {
     externalNativeBuild {
         cmake {
             path("src/main/cpp/CMakeLists.txt")
-            version = "3.31.6"
+            version = "4.0.2"
         }
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = "21"
+    kotlin {
+        compilerOptions {
+            apiVersion = KotlinVersion.KOTLIN_2_3
+            languageVersion = KotlinVersion.KOTLIN_2_3
+            jvmTarget = JvmTarget.JVM_21
+        }
     }
     lint {
         checkReleaseBuilds = false
@@ -54,17 +57,4 @@ kotlin {
 dependencies {
     androidTestImplementation(libs.androidx.runner)
     androidTestImplementation(libs.androidx.rules)
-}
-
-afterEvaluate {
-    publishing {
-        publications {
-            register("mavenRelease", MavenPublication::class) {
-                groupId = "com.kyant"
-                artifactId = "taglib"
-                version = libs.versions.lib.version.get()
-                from(components["release"])
-            }
-        }
-    }
 }

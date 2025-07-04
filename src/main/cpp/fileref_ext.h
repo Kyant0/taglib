@@ -36,8 +36,6 @@ using namespace TagLib;
 
 namespace TagLibExt {
 
-    class Tag;
-
     //! This class provides a simple abstraction for creating and handling files
 
     /*!
@@ -107,7 +105,7 @@ namespace TagLibExt {
          *
          * \see File::tag()
          */
-        TagLib::Tag *tag() const;
+        Tag *tag() const;
 
         /*!
          * Exports the tags of the file as dictionary mapping (human readable) tag
