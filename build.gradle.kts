@@ -1,42 +1,79 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
-
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    id("maven-publish")
 }
 
 android {
     namespace = "com.kyant.taglib"
-    compileSdk = 36
-    buildToolsVersion = "36.0.0"
-    ndkVersion = "29.0.13599879"
+    compileSdk = 34
+    buildToolsVersion = "34.0.0"
+    ndkVersion = "29.0.13846066"
 
     defaultConfig {
         minSdk = 23
         consumerProguardFiles("consumer-rules.pro")
         ndk {
-            abiFilters += arrayOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
         }
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
-        release {
+        getByName("release") {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
+
     externalNativeBuild {
         cmake {
-            path("src/main/cpp/CMakeLists.txt")
+            path = file("src/main/cpp/CMakeLists.txt")
             version = "4.0.2"
         }
     }
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_18
+        targetCompatibility = JavaVersion.VERSION_18
+    }
+
+    kotlinOptions {
+        apiVersion = "1.8"
+        languageVersion = "1.8"
+        jvmTarget = "18"
+    }
+
+    lint {
+        checkReleaseBuilds = false
+    }
+}
+
+kotlin {
+    explicitApi()
+}
+
+dependencies {
+    androidTestImplementation(libs.androidx.runner)
+    androidTestImplementation(libs.androidx.rules)
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            create<MavenPublication>("release") {
+                from(components["release"])
+
+                groupId = "com.github.evnzy"
+                artifactId = "taglib-native"
+                version = "1.0.3"
+            }
+        }
+    }
+}        targetCompatibility = JavaVersion.VERSION_21
     }
     kotlin {
         compilerOptions {

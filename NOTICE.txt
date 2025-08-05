@@ -1,0 +1,18 @@
+NOTICE
+
+This project includes a compiled version of the TagLib library for Android.
+
+Built from:
+- Android wrapper: https://github.com/Kyant0/taglib (Apache License 2.0)
+- Core library: https://github.com/taglib/taglib (LGPL 2.1 / MPL 1.1)
+
+Some build configurations (e.g. Gradle, CMake, NDK) have been modified for compatibility.
+
+You are free to use, link, and distribute this binary under the respective open-source licenses.
+Refer to LICENSE files or the links below for full license details:
+
+- Apache License 2.0: https://www.apache.org/licenses/LICENSE-2.0  
+- LGPL 2.1: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.html  
+- MPL 1.1: https://www.mozilla.org/MPL/1.1/
+
+No changes have been made to the core TagLib source code.
