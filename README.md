@@ -95,12 +95,8 @@ You can now include this AAR in your app's libs/ directory as shown above.
 
 TagLib `(https://taglib.org/)` — C++ library for audio metadata. This version is wrapped for Android with CMake + NDK + JNI. `Forked and modified from kyant0/taglib (Apache License 2.0).`
 
-# License
+# Note:
 
-LGPL-2.1-or-later
+This repository is a fork of `kyant0/taglib`, originally licensed under `Apache License 2.0`.
 
-MPL-1.1
-
-Apache-2.0 (from kyant0/taglib) See `NOTICE.txt` for details.
-
-
+This fork `maintains` the Android integration from the original project, while providing additional build configurations, usage documentation, and packaged artifacts (.aar) for easier adoption in Android projects.
