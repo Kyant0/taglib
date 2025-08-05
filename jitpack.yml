@@ -1,0 +1,11 @@
+jdk:
+  - 17
+
+install:
+  - ./gradle
+  
+  
+
+
+
+Add jitpack.yml for Java 17 compatibility
