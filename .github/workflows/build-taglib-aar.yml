@@ -3,7 +3,7 @@ name: Build TagLib AAR for Android
 on:
   push:
     branches:
-      - main
+      - Actions
   workflow_dispatch:
 
 jobs:
