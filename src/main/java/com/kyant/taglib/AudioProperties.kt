@@ -13,4 +13,5 @@ public data class AudioProperties(
     val bitrate: Int,
     val sampleRate: Int,
     val channels: Int,
+    val codec: String
 )
