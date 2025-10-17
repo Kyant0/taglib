@@ -7,9 +7,10 @@ public data class Metadata(
     val propertyMap: PropertyMap,
     val pictures: Array<Picture>,
 ) {
+
     override fun toString(): String {
         return "Metadata(propertyMap=${propertyMap.mapValues { it.value.contentToString() }}, " +
-            "pictures=${pictures.contentToString()})"
+                "pictures=${pictures.contentToString()})"
     }
 
     override fun equals(other: Any?): Boolean {

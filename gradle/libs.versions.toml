@@ -1,8 +1,8 @@
 [versions]
-agp = "8.11.0"
-kotlin = "2.2.0"
-rules = "1.6.1"
-runner = "1.6.2"
+agp = "8.13.0"
+kotlin = "2.2.20"
+rules = "1.7.0"
+runner = "1.7.0"
 
 [libraries]
 androidx-rules = { module = "androidx.test:rules", version.ref = "rules" }

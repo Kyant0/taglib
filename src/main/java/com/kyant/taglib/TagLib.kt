@@ -4,6 +4,11 @@ package com.kyant.taglib
  * An object that provides access to the native TagLib library.
  */
 public object TagLib {
+
+    init {
+        System.loadLibrary("taglib")
+    }
+
     @JvmStatic
     private external fun getAudioProperties(
         fd: Int,
@@ -89,8 +94,4 @@ public object TagLib {
         fd: Int,
         pictures: Array<Picture>,
     ): Boolean
-
-    init {
-        System.loadLibrary("taglib")
-    }
 }
