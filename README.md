@@ -4,10 +4,12 @@ An Android library which can read and write tags of audio files, using [TagLib](
 
 ## Add to project
 
-Download the [aar](https://github.com/Kyant0/taglib/releases) and copy it to your module's `libs` directory.
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.kyant0/taglib)](https://central.sonatype.com/artifact/io.github.kyant0/taglib)
+
+In build.gradle.kts, add
 
 ```kotlin
-implementation(files("libs/taglib-release.aar"))
+implementation("io.github.kyant0:taglib:<version>")
 ```
 
 ## Functions
