@@ -6,7 +6,9 @@ plugins {
 
 android {
     namespace = "com.kyant.taglib"
-    compileSdk = 36
+    compileSdk {
+        version = release(36)
+    }
     buildToolsVersion = "36.1.0"
     ndkVersion = "29.0.14206865"
 
@@ -36,7 +38,6 @@ android {
         checkReleaseBuilds = false
     }
 }
-
 kotlin {
     jvmToolchain(21)
     explicitApi()
