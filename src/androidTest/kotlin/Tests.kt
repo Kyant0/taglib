@@ -3,6 +3,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.ParcelFileDescriptor
 import androidx.test.platform.app.InstrumentationRegistry
+import com.kyant.taglib.Constants
 import com.kyant.taglib.Picture
 import com.kyant.taglib.TagLib
 import org.junit.Assert
@@ -21,6 +22,7 @@ class Tests {
         read_flac_multiple_pictures()
         ensure_utf8()
         bad_encoding()
+        testConstants()
     }
 
     private fun read_and_write_m4a() {
@@ -163,5 +165,73 @@ class Tests {
                 }
             }
         }
+    }
+
+    fun testConstants() {
+        Assert.assertEquals("ALBUM", Constants.ALBUM)
+        Assert.assertEquals("BPM", Constants.BPM)
+        Assert.assertEquals("COMPOSER", Constants.COMPOSER)
+        Assert.assertEquals("GENRE", Constants.GENRE)
+        Assert.assertEquals("COPYRIGHT", Constants.COPYRIGHT)
+        Assert.assertEquals("ENCODINGTIME", Constants.ENCODINGTIME)
+        Assert.assertEquals("PLAYLISTDELAY", Constants.PLAYLISTDELAY)
+        Assert.assertEquals("ORIGINALDATE", Constants.ORIGINALDATE)
+        Assert.assertEquals("DATE", Constants.DATE)
+        Assert.assertEquals("RELEASEDATE", Constants.RELEASEDATE)
+        Assert.assertEquals("TAGGINGDATE", Constants.TAGGINGDATE)
+        Assert.assertEquals("ENCODEDBY", Constants.ENCODEDBY)
+        Assert.assertEquals("LYRICIST", Constants.LYRICIST)
+        Assert.assertEquals("FILETYPE", Constants.FILETYPE)
+        Assert.assertEquals("WORK", Constants.WORK)
+        Assert.assertEquals("Work", Constants.ITUNES_WORK)
+        Assert.assertEquals("TITLE", Constants.TITLE)
+        Assert.assertEquals("SUBTITLE", Constants.SUBTITLE)
+        Assert.assertEquals("INITIALKEY", Constants.INITIALKEY)
+        Assert.assertEquals("LANGUAGE", Constants.LANGUAGE)
+        Assert.assertEquals("LENGTH", Constants.LENGTH)
+        Assert.assertEquals("MEDIA", Constants.MEDIA)
+        Assert.assertEquals("MOOD", Constants.MOOD)
+        Assert.assertEquals("ORIGINALALBUM", Constants.ORIGINALALBUM)
+        Assert.assertEquals("ORIGINALFILENAME", Constants.ORIGINALFILENAME)
+        Assert.assertEquals("ORIGINALLYRICIST", Constants.ORIGINALLYRICIST)
+        Assert.assertEquals("ORIGINALARTIST", Constants.ORIGINALARTIST)
+        Assert.assertEquals("OWNER", Constants.OWNER)
+        Assert.assertEquals("ARTIST", Constants.ARTIST)
+        Assert.assertEquals("ALBUMARTIST", Constants.ALBUMARTIST)
+        Assert.assertEquals("PERFORMER", Constants.PERFORMER)
+        Assert.assertEquals("CONDUCTOR", Constants.CONDUCTOR)
+        Assert.assertEquals("REMIXER", Constants.REMIXER)
+        Assert.assertEquals("ARRANGER", Constants.ARRANGER)
+        Assert.assertEquals("DISCNUMBER", Constants.DISCNUMBER)
+        Assert.assertEquals("PRODUCEDNOTICE", Constants.PRODUCEDNOTICE)
+        Assert.assertEquals("LABEL", Constants.LABEL)
+        Assert.assertEquals("TRACKNUMBER", Constants.TRACKNUMBER)
+        Assert.assertEquals("RADIOSTATION", Constants.RADIOSTATION)
+        Assert.assertEquals("RADIOSTATIONOWNER", Constants.RADIOSTATIONOWNER)
+        Assert.assertEquals("ALBUMSORT", Constants.ALBUMSORT)
+        Assert.assertEquals("COMPOSERSORT", Constants.COMPOSERSORT)
+        Assert.assertEquals("ARTISTSORT", Constants.ARTISTSORT)
+        Assert.assertEquals("TITLESORT", Constants.TITLESORT)
+        Assert.assertEquals("ALBUMARTISTSORT", Constants.ALBUMARTISTSORT)
+        Assert.assertEquals("ISRC", Constants.ISRC)
+        Assert.assertEquals("ENCODING", Constants.ENCODING)
+        Assert.assertEquals("DISCSUBTITLE", Constants.DISCSUBTITLE)
+        Assert.assertEquals("COPYRIGHTURL", Constants.COPYRIGHTURL)
+        Assert.assertEquals("FILEWEBPAGE", Constants.FILEWEBPAGE)
+        Assert.assertEquals("ARTISTWEBPAGE", Constants.ARTISTWEBPAGE)
+        Assert.assertEquals("AUDIOSOURCEWEBPAGE", Constants.AUDIOSOURCEWEBPAGE)
+        Assert.assertEquals("RADIOSTATIONWEBPAGE", Constants.RADIOSTATIONWEBPAGE)
+        Assert.assertEquals("PAYMENTWEBPAGE", Constants.PAYMENTWEBPAGE)
+        Assert.assertEquals("PUBLISHERWEBPAGE", Constants.PUBLISHERWEBPAGE)
+        Assert.assertEquals("COMMENT", Constants.COMMENT)
+        Assert.assertEquals("PODCAST", Constants.PODCAST)
+        Assert.assertEquals("PODCASTCATEGORY", Constants.PODCASTCATEGORY)
+        Assert.assertEquals("PODCASTDESC", Constants.PODCASTDESC)
+        Assert.assertEquals("PODCASTID", Constants.PODCASTID)
+        Assert.assertEquals("PODCASTURL", Constants.PODCASTURL)
+        Assert.assertEquals("MOVEMENTNAME", Constants.MOVEMENTNAME)
+        Assert.assertEquals("MOVEMENTNUMBER", Constants.MOVEMENTNUMBER)
+        Assert.assertEquals("GROUPING", Constants.GROUPING)
+        Assert.assertEquals("COMPILATION", Constants.COMPILATION)
     }
 }
