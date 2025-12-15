@@ -17,6 +17,7 @@ public object Constants {
     public const val FILETYPE: String = "FILETYPE"
     public const val WORK: String = "WORK"
     public const val ITUNES_WORK: String = "Work"
+    public const val TITLE: String = "TITLE"
     public const val SUBTITLE: String = "SUBTITLE"
     public const val INITIALKEY: String = "INITIALKEY"
     public const val LANGUAGE: String = "LANGUAGE"
