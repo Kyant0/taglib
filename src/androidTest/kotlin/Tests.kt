@@ -184,6 +184,7 @@ class Tests {
         Assert.assertEquals("FILETYPE", Constants.FILETYPE)
         Assert.assertEquals("WORK", Constants.WORK)
         Assert.assertEquals("Work", Constants.ITUNES_WORK)
+        Assert.assertEquals("TITLE", Constants.TITLE)
         Assert.assertEquals("SUBTITLE", Constants.SUBTITLE)
         Assert.assertEquals("INITIALKEY", Constants.INITIALKEY)
         Assert.assertEquals("LANGUAGE", Constants.LANGUAGE)
